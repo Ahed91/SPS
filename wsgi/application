@@ -4,6 +4,7 @@ sys.stdout = sys.stderr
 import atexit
 import threading
 import cherrypy
+import os.path
 
 cherrypy.config.update({'environment': 'embedded'})
 
@@ -11,17 +12,125 @@ if cherrypy.__version__.startswith('3.0') and cherrypy.engine.state == 0:
     cherrypy.engine.start(blocking=False)
     atexit.register(cherrypy.engine.stop)
 
-class Root(object):
-    def index(self):
-        return """
+states = {
+    'LED1': 'Off',
+    'LED2': 'On',
+    'POT' : 0
+}
 
-<html><head><style type="text/css"></style><style type="text/css"></style></head><body>
-  <p style="left: 516px;">
-  Hello Ahmad ghoul
-  </p>
-</body></html>
-"""
-    index.exposed = True
+class States:
 
-application = cherrypy.Application(Root(), script_name=None, config=None)
+    exposed = True
 
+    def GET(self, id=None):
+    
+        if id == None:
+            return"""
+<!DOCTYPE HTML>
+<html>
+<head>
+
+<title>Full Screen</title>
+
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width" />
+
+
+
+<link rel="stylesheet" href="style.css" />
+
+<script src="jquery.js"></script>
+<script src="fullPaged.js"></script>
+
+<script>
+
+$(document).ready(function() {
+	
+	$('#container').fullPaged({
+		'direction' : 'bottom'
+	});
+
+var myInterval = setInterval(function(){
+$.ajax({
+    url:"http://cherrypy-ahed.rhcloud.com/api/states/LED1"
+    }).success (function(responseText) {
+   var array = responseText.split(',')
+   $("#led1").html(array[0]) 
+$("#led2").html(array[1]) 
+$("#pot").html(array[2]) 
+       })
+
+   },1000)
+});
+
+
+</script>
+
+</head>
+<body>
+
+<div id="container">
+	
+	<div id="home-page">
+		<div class="slide-content">
+			<div class="content">
+				<p>Control Cloud</p>
+			</div>
+			<div class="show-menu">
+            </br></br>
+                led_ahed1 : <i id="led1" >off</i></br></br>
+                led2 : <i id="led2" >off</i></br></br>
+                pot : <i id="pot" >55</i></br></br></br>
+			</div>
+		</div>
+	</div>
+	
+</div>
+</body>
+</html> 
+
+        """
+        elif id in states:
+            return('%s,%s,%s' % (states['LED1'],states['LED2'],states['POT']))
+        else:
+            return('The %s is not defined :-(' % id)
+
+    def PUT(self, led1=None, led2=None, pot=None):
+        states['LED1'] = led1 or states['LED1']
+        states['LED2'] = led2 or states['LED2']
+        states['POT'] = pot or states['POT']
+        return led1 or led2 or pot
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+conf = {'/':
+            {'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
+            'tools.staticfile.root': current_dir },
+
+        '/style.css':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/style.css'},
+
+        '/jquery.js':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/jquery.js'},
+
+        '/fullPaged.js':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/fullPaged.js'},
+            
+         '/background.jpg':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/background.jpg'}
+          
+                }
+
+
+application = cherrypy.Application(
+        States(), '/api/states', conf
+        )
