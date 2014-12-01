@@ -10,114 +10,122 @@ body {
 	font-family: 'adelle-sans', san-serif;
 }
 
-#led1 {
+#contact_icon {
     position: absolute;
-    left: 734px;
+    left: 198px;
+    top: 353px;
+    width: 78px;
+    z-index: 1;
+}
+
+#A1 {
+    position: absolute;
+    left: 735px;
     top: 645px;
     z-index: 1;
 }
 
-#led2 {
-    position: absolute;
-    left: 772px;
-    top: 645px;
-    z-index: 1;
-}
-
-#led3 {
-    position: absolute;
-    left: 811px;
-    top: 645px;
-    z-index: 1;
-}
-
-#led4 {
-    position: absolute;
-    left: 850px;
-    top: 645px;
-    z-index: 1;
-}
-
-#led5 {
-    position: absolute;
-    left: 888px;
-    top: 645px;
-    z-index: 1;
-}
-
-#led6 {
-    position: absolute;
-    left: 927px;
-    top: 645px;
-    z-index: 1;
-}
-
-#led7 {
-    position: absolute;
-    left: 966px;
-    top: 645px;
-    z-index: 1;
-}
-
-#led8 {
-    position: absolute;
-    left: 1004px;
-    top: 645px;
-    z-index: 1;
-}
-
-#led9 {
-    position: absolute;
-    left: 734px;
-    top: 791px;
-    z-index: 1;
-}
-
-#led10 {
+#A2 {
     position: absolute;
     left: 773px;
-    top: 791px;
+    top: 645px;
     z-index: 1;
 }
 
-#led11 {
+#A3 {
     position: absolute;
-    left: 810px;
-    top: 791px;
+    left: 812px;
+    top: 645px;
     z-index: 1;
 }
 
-#led12 {
+#A4 {
     position: absolute;
-    left: 849px;
-    top: 791px;
+    left: 851px;
+    top: 645px;
     z-index: 1;
 }
 
-#led13 {
+#C1 {
     position: absolute;
     left: 889px;
+    top: 645px;
+    z-index: 1;
+}
+
+#C2 {
+    position: absolute;
+    left: 928px;
+    top: 645px;
+    z-index: 1;
+}
+
+#C3 {
+    position: absolute;
+    left: 967px;
+    top: 645px;
+    z-index: 1;
+}
+
+#C4 {
+    position: absolute;
+    left: 1005px;
+    top: 645px;
+    z-index: 1;
+}
+
+#B1 {
+    position: absolute;
+    left: 735px;
     top: 791px;
     z-index: 1;
 }
 
-#led14 {
+#B2 {
     position: absolute;
-    left: 927px;
+    left: 774px;
     top: 791px;
     z-index: 1;
 }
 
-#led15 {
+#B3 {
     position: absolute;
-    left: 965px;
+    left: 811px;
     top: 791px;
     z-index: 1;
 }
 
-#led16 {
+#B4 {
     position: absolute;
-    left: 1002px;
+    left: 850px;
+    top: 791px;
+    z-index: 1;
+}
+
+#D1 {
+    position: absolute;
+    left: 890px;
+    top: 791px;
+    z-index: 1;
+}
+
+#D2 {
+    position: absolute;
+    left: 928px;
+    top: 791px;
+    z-index: 1;
+}
+
+#D3 {
+    position: absolute;
+    left: 966px;
+    top: 791px;
+    z-index: 1;
+}
+
+#D4 {
+    position: absolute;
+    left: 1003px;
     top: 791px;
     z-index: 1;
 }
@@ -171,5 +179,6 @@ body {
 .arrow.top:after {
     bottom: -20px;
     top: auto;
-
 }
+
+
