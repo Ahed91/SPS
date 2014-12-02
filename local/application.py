@@ -61,21 +61,16 @@ class Root:
             last_name = pargs[1]
             email = pargs[2]
             message = pargs[3]
-            try:
-                # Connect to database
-                db = sqlite3.connect('data.db')
-                cursor = db.cursor()
-                cursor.execute('''INSERT INTO contact(firstname, lastname, email, message)
+            # Connect to database
+            db = sqlite3.connect('data.db')
+            cursor = db.cursor()
+            cursor.execute('''INSERT INTO contact(firstname, lastname, email, message)
                                              VALUES(?,?,?,?)''', (first_name, last_name, email, message))
-                db.commit()
-            except Exception as e:
-                db.rollback()
-                raise e
-            finally:
-                db.close()
-                id = cursor.lastrowid
-                print('contact inserted', id)
-                return 'Thanks for your interest'
+            db.commit()
+            db.close()
+            id = cursor.lastrowid
+            print('contact inserted', id)
+            return 'Thanks for your interest'
 
         elif id == 'reserve':
             username = pargs[0]
