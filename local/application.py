@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
 import sys
 import cherrypy
 import os.path
@@ -27,7 +30,7 @@ class Root:
 
     exposed = True
 
-    def GET(self, id=None , *pargs):
+    def GET(self, id=None, *pargs):
 
         if id == None:
             raise cherrypy.HTTPRedirect('/index')
@@ -61,11 +64,10 @@ class Root:
             last_name = pargs[1]
             email = pargs[2]
             message = pargs[3]
-            # Connect to database
             db = sqlite3.connect('data.db')
             cursor = db.cursor()
-            cursor.execute('''INSERT INTO contact(firstname, lastname, email, message)
-                                             VALUES(?,?,?,?)''', (first_name, last_name, email, message))
+            cursor.execute('''INSERT INTO contact(firstname, lastname, email, body)
+                                         VALUES(?,?,?,?)''', (first_name, last_name, email, message))
             db.commit()
             db.close()
             id = cursor.lastrowid
@@ -99,9 +101,18 @@ class Root:
                                     return 'Choose another time or location(1timefrom min less than old timeto)'
                             if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
                                 return 'Choose another time or location(1timefrom hour less than old timeto)'
+                        if int(timefrom.split(':')[1]) < int(i[4].split(':')[1]):
+                            if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
+                                if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
+                                    return 'Choose another time or location(1timeto min more than old timeto)'
+                            if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
+                                return 'Choose another time or location(1timeto hour more than old timeto)'
                     if int(timefrom.split(':')[0]) < int(i[4].split(':')[0]):
-                        if int(timefrom.split(':')[0]) < int(timeto.split(':')[0]) :
+                        if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
                             return 'Choose another time or location(2timeto hour more than old timefrom)'
+                        if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
+                            if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
+                                return 'Choose another time or location(2timeto min more than old timefrom)'
                     if int(timefrom.split(':')[0]) > int(i[4].split(':')[0]):
                         if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
                             return 'Choose another time or location(3timefrom hour less than old timeto)'
@@ -128,9 +139,12 @@ class Root:
             return str(l).strip('[]').replace('),','),</br>')
 
         if id == 'gettodayfromdb':
+            current_date=time.strftime('%d.%m.%Y')
+            if current_date[0]=='0':
+                current_date = current_date[1:]
             db = sqlite3.connect('data.db')
             cursor = db.cursor()
-            cursor.execute('SELECT * FROM reserve where date=?',(time.strftime('%d.%m.%Y'),))
+            cursor.execute('SELECT * FROM reserve where date=?',(current_date,))
             l = []
             for _ in cursor.fetchall():
                 l.append(_)
@@ -172,6 +186,90 @@ class Root:
                             close_min = int(item[4].split(':')[1])
                             index = idx
                 return str(l[index])
+            return ''
+
+        if id == 'timefrom':
+            current_date=time.strftime('%d.%m.%Y')
+            if current_date[0]=='0':
+                current_date = current_date[1:]
+            l=[]
+            db = sqlite3.connect('data.db')
+            cursor = db.cursor()
+            cursor.execute('SELECT * FROM reserve where date=?',(current_date,))
+            for _ in cursor.fetchall():
+                l.append(_)
+            db.close()
+            print l
+            current_min = int(time.strftime('%M'))
+            current_hour = int(time.strftime('%H'))
+            close_min = 59
+            close_hour = 23
+            index = -1
+            index2 = -2
+            if len(l):
+                for idx,item in enumerate(l):
+                    if int(item[4].split(':')[0]) == current_hour:
+                        index2 = -2
+                        if int(item[4].split(':')[1]) >= current_min and  int(item[4].split(':')[1]) < close_min :
+                            close_min = int(item[4].split(':')[1])
+                            index = idx
+                if index2 == -1 :
+                    for idx2,item2 in enumerate(l):
+                        if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) < close_hour :
+                            close_hour = int(item[4].split(':')[0])
+                            index2 = idx2
+                    if int(item[4].split(':')[0]) == close_hour :
+                        if int(item[4].split(':')[1]) < close_min :
+                            close_min = int(item[4].split(':')[1])
+                            index = idx
+                if int(l[index][4].split(':')[0]) <= 11 :
+                    return l[index][3].replace('.' ,'/'), ' ', l[index][4], u' ص'
+                if int(l[index][4].split(':')[0]) == 12 :
+                    return l[index][3].replace('.' ,'/'), ' ', l[index][4], u' م'
+                elif int(l[index][4].split(':')[0]) >= 13 :
+                    return l[index][3].replace('.' ,'/'), ' ', str(int(l[index][4].split(':')[0])-12), u' م'
+            return ''
+
+        if id == 'timeto':
+            current_date=time.strftime('%d.%m.%Y')
+            if current_date[0]=='0':
+                current_date = current_date[1:]
+            l=[]
+            db = sqlite3.connect('data.db')
+            cursor = db.cursor()
+            cursor.execute('SELECT * FROM reserve where date=?',(current_date,))
+            for _ in cursor.fetchall():
+                l.append(_)
+            db.close()
+            print l
+            current_min = int(time.strftime('%M'))
+            current_hour = int(time.strftime('%H'))
+            close_min = 59
+            close_hour = 23
+            index = -1
+            index2 = -2
+            if len(l):
+                for idx,item in enumerate(l):
+                    if int(item[4].split(':')[0]) == current_hour:
+                        index2 = -2
+                        if int(item[4].split(':')[1]) >= current_min and  int(item[4].split(':')[1]) < close_min :
+                            close_min = int(item[4].split(':')[1])
+                            index = idx
+                if index2 == -1 :
+                    for idx2,item2 in enumerate(l):
+                        if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) < close_hour :
+                            close_hour = int(item[4].split(':')[0])
+                            index2 = idx2
+                    if int(item[4].split(':')[0]) == close_hour :
+                        if int(item[4].split(':')[1]) < close_min :
+                            close_min = int(item[4].split(':')[1])
+                            index = idx
+                if int(l[index][5].split(':')[0]) <= 11 :
+                    return l[index][3].replace('.' ,'/'), ' ', l[index][5], u' ص'
+                if int(l[index][5].split(':')[0]) == 12 :
+                    return l[index][3].replace('.' ,'/'), ' ', l[index][5], u' م'
+                elif int(l[index][5].split(':')[0]) >= 13 :
+                    return l[index][3].replace('.' ,'/'), ' ', str(int(l[index][5].split(':')[0])-12), u' م'
             return ''
 
         if id == 'getcontact':
@@ -221,6 +319,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 conf = {'/':
             {'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
             'tools.staticfile.root': current_dir },
+
 
         '/index':
             {'tools.staticfile.on': True,

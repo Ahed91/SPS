@@ -241,8 +241,9 @@ function reserve(loc) {
                 { field: 'username', type: 'text', required: true },
                 { field: 'location', type: 'text', required: true },
                 { field: 'date', type: 'date',  options  : {
-                                                              format: 'd.m.yyyy',
-                                                              start : new Date().getDate()+'.'+(new Date().getMonth()+1)+'.'+new Date().getFullYear()
+                        format: 'd.m.yyyy',
+                        start : new Date().getDate()+'.'+(new Date().getMonth()+1)+'.'+new Date().getFullYear(),
+                        end : new Date().getDate()+'.'+(new Date().getMonth()+1)+'.'+(new Date().getFullYear()+1)
                                                            }
                 },
                 { field: 'timefrom', type: 'time', options: { format: 'h24', start:new Date().getHours()+':00' }},
