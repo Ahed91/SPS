@@ -223,11 +223,14 @@ class Root:
                             close_min = int(item[4].split(':')[1])
                             index = idx
                 if int(l[index][4].split(':')[0]) <= 11 :
-                    return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', l[index][4], u' ص'
+                    if int(l[index][4].split(':')[0]) < 10:
+                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' 0', l[index][4], u':00 ص'
+                    else: 
+                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', l[index][4], u':00 ص'
                 if int(l[index][4].split(':')[0]) == 12 :
-                    return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', l[index][4], u' م'
+                    return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', l[index][4], u':00 م'
                 elif int(l[index][4].split(':')[0]) >= 13 :
-                    return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', str(int(l[index][4].split(':')[0])-12), u' م'
+                    return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', str(int(l[index][4].split(':')[0])-12), u'00 م'
             return ''
 
         if id == 'timeto':
