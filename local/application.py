@@ -195,7 +195,7 @@ class Root:
             l=[]
             db = sqlite3.connect('data.db')
             cursor = db.cursor()
-            cursor.execute('SELECT * FROM reserve where date=?',(current_date,))
+            cursor.execute('SELECT * FROM reserve where date=? and location=?',(current_date,pargs[0]))
             for _ in cursor.fetchall():
                 l.append(_)
             db.close()
@@ -222,18 +222,28 @@ class Root:
                         if int(item[4].split(':')[1]) < close_min :
                             close_min = int(item[4].split(':')[1])
                             index = idx
-                if int(l[index][4].split(':')[0]) <= 11 :
+            if  int(l[index][3].split('.')[0])< 10:
+                if  int(l[index][3].split('.')[1])< 10:
                     if int(l[index][4].split(':')[0]) < 10:
-                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' 0', l[index][4], u':00 ص'
+                        return '0', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][4]
                     else: 
-                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', l[index][4], u':00 ص'
-                if int(l[index][4].split(':')[0]) == 12 :
-                    return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', l[index][4], u':00 م'
-                elif int(l[index][4].split(':')[0]) >= 13 :
-                    if int(l[index][4].split(':')[0])-12 < 10:
-                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' 0', str(int(l[index][4].split(':')[0])-12), ':' , l[index][4].split(':')[1] ,u':00 م'
-                    else:
-                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', str(int(l[index][4].split(':')[0])-12), ':' ,l[index][4].split(':')[1] , u':00 م'
+                        return '0', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][4]
+                else:
+                    if int(l[index][4].split(':')[0]) < 10:
+                        return '0', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][4]
+                    else: 
+                        return '0', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][4]
+            else:
+                if  int(l[index][3].split('.')[1])< 10:
+                    if int(l[index][4].split(':')[0]) < 10:
+                        return '', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][4]
+                    else: 
+                        return '', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][4]
+                else:
+                    if int(l[index][4].split(':')[0]) < 10:
+                        return '', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][4]
+                    else: 
+                        return '', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][4]
             return ''
 
         if id == 'timeto':
@@ -243,7 +253,7 @@ class Root:
             l=[]
             db = sqlite3.connect('data.db')
             cursor = db.cursor()
-            cursor.execute('SELECT * FROM reserve where date=?',(current_date,))
+            cursor.execute('SELECT * FROM reserve where date=? and location=?',(current_date, pargs[0]))
             for _ in cursor.fetchall():
                 l.append(_)
             db.close()
@@ -270,18 +280,28 @@ class Root:
                         if int(item[4].split(':')[1]) < close_min :
                             close_min = int(item[4].split(':')[1])
                             index = idx
-                if int(l[index][5].split(':')[0]) <= 11 :
-                    if int(l[index][5].split(':')[0]) < 10:
-                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' 0', l[index][5], u':00 ص'
-                    else: 
-                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', l[index][5], u':00 ص'
-                if int(l[index][5].split(':')[0]) == 12 :
-                    return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', l[index][5], u':00 م'
-                elif int(l[index][5].split(':')[0]) >= 13 :
-                    if int(l[index][5].split(':')[0])-12 < 10:
-                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' 0', str(int(l[index][5].split(':')[0])-12), ':' , l[index][5].split(':')[1] ,u':00 م'
+                if  int(l[index][3].split('.')[0])< 10:
+                    if  int(l[index][3].split('.')[1])< 10:
+                        if int(l[index][5].split(':')[0]) < 10:
+                            return '0', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
+                        else: 
+                            return '0', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
                     else:
-                        return l[index][3][0:5].replace('.' ,'/'), l[index][3][7:].replace('.' ,'/'), ' ', str(int(l[index][5].split(':')[0])-12), ':' ,l[index][5].split(':')[1] , u':00 م'
+                        if int(l[index][5].split(':')[0]) < 10:
+                            return '0', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
+                        else: 
+                            return '0', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
+                else:
+                    if  int(l[index][3].split('.')[1])< 10:
+                        if int(l[index][5].split(':')[0]) < 10:
+                            return '', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
+                        else: 
+                            return '', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
+                    else:
+                        if int(l[index][5].split(':')[0]) < 10:
+                            return '', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
+                        else: 
+                            return '', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
             return ''
 
         if id == 'getcontact':
