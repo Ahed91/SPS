@@ -309,10 +309,10 @@ class Root:
                 if index2 == -1 :
                     for idx,item in enumerate(l):
                         if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) <= close_hour :
-                    if int(item[4].split(':')[0]) == close_hour :
-                        if int(item[4].split(':')[1]) < close_min :
-                            close_min = int(item[4].split(':')[1])
-                            index = idx
+                            if int(item[4].split(':')[0]) == close_hour :
+                                if int(item[4].split(':')[1]) < close_min :
+                                    close_min = int(item[4].split(':')[1])
+                                    index = idx
                             if int(item[4].split(':')[0]) < close_hour :
                                 close_hour = int(item[4].split(':')[0])
                                 close_min = int(item[4].split(':')[1])
