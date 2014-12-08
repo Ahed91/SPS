@@ -78,7 +78,7 @@ class Root:
                 # Connect to database
                 db = sqlite3.connect('data.db')
                 cursor = db.cursor()
-                cursor.execute('''INSERT INTO contact(firstname, lastname, email, message)
+                cursor.execute('''INSERT INTO contact(firstname, lastname, email, body)
                                              VALUES(?,?,?,?)''', (first_name, last_name, email, message))
                 db.commit()
             except Exception as e:
@@ -229,6 +229,11 @@ class Root:
             index2 = -1
             if len(l):
                 for idx,item in enumerate(l):
+                    if int(item[5].split(':')[0]) == current_hour:
+                        index2 = -2
+                        if int(item[5].split(':')[1]) >= current_min and  int(item[5].split(':')[1]) < close_min :
+                            close_min = int(item[5].split(':')[1])
+                            index = idx
                     if int(item[4].split(':')[0]) == current_hour:
                         index2 = -2
                         if int(item[4].split(':')[1]) >= current_min and  int(item[4].split(':')[1]) < close_min :
@@ -291,6 +296,11 @@ class Root:
             index2 = -1
             if len(l):
                 for idx,item in enumerate(l):
+                    if int(item[5].split(':')[0]) == current_hour:
+                        index2 = -2
+                        if int(item[5].split(':')[1]) >= current_min and  int(item[5].split(':')[1]) < close_min :
+                            close_min = int(item[5].split(':')[1])
+                            index = idx
                     if int(item[4].split(':')[0]) == current_hour:
                         index2 = -2
                         if int(item[4].split(':')[1]) >= current_min and  int(item[4].split(':')[1]) < close_min :

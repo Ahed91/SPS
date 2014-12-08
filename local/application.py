@@ -213,6 +213,11 @@ class Root:
             index2 = -1
             if len(l):
                 for idx,item in enumerate(l):
+                    if int(item[5].split(':')[0]) == current_hour:
+                        index2 = -2
+                        if int(item[5].split(':')[1]) >= current_min and  int(item[5].split(':')[1]) < close_min :
+                            close_min = int(item[5].split(':')[1])
+                            index = idx
                     if int(item[4].split(':')[0]) == current_hour:
                         index2 = -2
                         if int(item[4].split(':')[1]) >= current_min and  int(item[4].split(':')[1]) < close_min :
@@ -275,6 +280,11 @@ class Root:
             index2 = -1
             if len(l):
                 for idx,item in enumerate(l):
+                    if int(item[5].split(':')[0]) == current_hour:
+                        index2 = -2
+                        if int(item[5].split(':')[1]) >= current_min and  int(item[5].split(':')[1]) < close_min :
+                            close_min = int(item[5].split(':')[1])
+                            index = idx
                     if int(item[4].split(':')[0]) == current_hour:
                         index2 = -2
                         if int(item[4].split(':')[1]) >= current_min and  int(item[4].split(':')[1]) < close_min :
