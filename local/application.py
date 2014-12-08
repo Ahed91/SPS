@@ -6,6 +6,7 @@ import cherrypy
 import os.path
 import sqlite3
 import time
+from grequests import AsyncRequest
 
 locations = {
     'A1': 'red',
@@ -68,17 +69,35 @@ class Root:
             self.GET(id='createdb')
 
         elif id == 'sync':
-            if len(pargs) == 0 :
-                return 'No rowid is given is inserted'
             # Connect to database
             db = sqlite3.connect('data.db')
             cursor = db.cursor()
-            cursor.execute('''SELECT * FROM reserve where id>=?''',(pargs[0],) )
-            l = []
-            for i in cursor.fetchall():
-                l.append(i[1:])
+            cursor.execute('''SELECT max(id) FROM reserve''')
+            max_id = cursor.fetchone()[0]
+            if max_id:
+                print type(max_id)
+                print max_id+1
+                req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(max_id+1))
+            else:
+                print max_id
+                req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/1')
+            req.send()
+            s = req.response.text.split(')')
+            print s
+            for i in range(0,len(s)):
+                if i==0:
+                    a = s[i].replace('u\'','').replace('\'','').replace('(','').split(', ')
+                elif i== len(s)-1:
+                    continue
+                else:
+                    a = s[i].replace('u\'','').replace('\'','').replace(', (','').split(', ')
+                if len(a)<6 :
+                    continue
+                cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
+                                             VALUES(?,?,?,?,?,?)''', (a[0], a[1], a[2], a[3], a[4], a[5]))
+                db.commit()
             db.close()
-            return str(l).strip('[]')
+            return 'yes'
 
 
         elif id == 'contact':
