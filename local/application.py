@@ -152,23 +152,24 @@ class Root:
             return str(l).strip('[]').replace('),','),</br>')
 
         if id == 'getcurrentfromdb':
+            if len(pargs) == 0 :
+                return 'No location is inserted'
             current_date=time.strftime('%d.%m.%Y')
             if current_date[0]=='0':
                 current_date = current_date[1:]
             l=[]
             db = sqlite3.connect('data.db')
             cursor = db.cursor()
-            cursor.execute('SELECT * FROM reserve where date=?',(current_date,))
+            cursor.execute('SELECT * FROM reserve where date=? and location=?',(current_date,pargs[0]))
             for _ in cursor.fetchall():
                 l.append(_)
             db.close()
-            print l
             current_min = int(time.strftime('%M'))
             current_hour = int(time.strftime('%H'))
             close_min = 59
             close_hour = 23
             index = -1
-            index2 = -2
+            index2 = -1
             if len(l):
                 for idx,item in enumerate(l):
                     if int(item[4].split(':')[0]) == current_hour:
@@ -177,18 +178,22 @@ class Root:
                             close_min = int(item[4].split(':')[1])
                             index = idx
                 if index2 == -1 :
-                    for idx2,item2 in enumerate(l):
-                        if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) < close_hour :
-                            close_hour = int(item[4].split(':')[0])
-                            index2 = idx2
-                    if int(item[4].split(':')[0]) == close_hour :
-                        if int(item[4].split(':')[1]) < close_min :
-                            close_min = int(item[4].split(':')[1])
-                            index = idx
+                    for idx,item in enumerate(l):
+                        if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) <= close_hour :
+                            if int(item[4].split(':')[0]) == close_hour :
+                                if int(item[4].split(':')[1]) < close_min :
+                                    close_min = int(item[4].split(':')[1])
+                                    index = idx
+                            if int(item[4].split(':')[0]) < close_hour :
+                                close_hour = int(item[4].split(':')[0])
+                                close_min = int(item[4].split(':')[1])
+                                index = idx
                 return str(l[index])
             return ''
 
         if id == 'timefrom':
+            if len(pargs) == 0 :
+                return 'No location is inserted'
             current_date=time.strftime('%d.%m.%Y')
             if current_date[0]=='0':
                 current_date = current_date[1:]
@@ -205,7 +210,7 @@ class Root:
             close_min = 59
             close_hour = 23
             index = -1
-            index2 = -2
+            index2 = -1
             if len(l):
                 for idx,item in enumerate(l):
                     if int(item[4].split(':')[0]) == current_hour:
@@ -214,14 +219,16 @@ class Root:
                             close_min = int(item[4].split(':')[1])
                             index = idx
                 if index2 == -1 :
-                    for idx2,item2 in enumerate(l):
-                        if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) < close_hour :
-                            close_hour = int(item[4].split(':')[0])
-                            index2 = idx2
-                    if int(item[4].split(':')[0]) == close_hour :
-                        if int(item[4].split(':')[1]) < close_min :
-                            close_min = int(item[4].split(':')[1])
-                            index = idx
+                    for idx,item in enumerate(l):
+                        if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) <= close_hour :
+                            if int(item[4].split(':')[0]) == close_hour :
+                                if int(item[4].split(':')[1]) < close_min :
+                                    close_min = int(item[4].split(':')[1])
+                                    index = idx
+                            if int(item[4].split(':')[0]) < close_hour :
+                                close_hour = int(item[4].split(':')[0])
+                                close_min = int(item[4].split(':')[1])
+                                index = idx
             if  int(l[index][3].split('.')[0])< 10:
                 if  int(l[index][3].split('.')[1])< 10:
                     if int(l[index][4].split(':')[0]) < 10:
@@ -247,6 +254,8 @@ class Root:
             return ''
 
         if id == 'timeto':
+            if len(pargs) == 0 :
+                return 'No location is inserted'
             current_date=time.strftime('%d.%m.%Y')
             if current_date[0]=='0':
                 current_date = current_date[1:]
@@ -263,7 +272,7 @@ class Root:
             close_min = 59
             close_hour = 23
             index = -1
-            index2 = -2
+            index2 = -1
             if len(l):
                 for idx,item in enumerate(l):
                     if int(item[4].split(':')[0]) == current_hour:
@@ -272,36 +281,38 @@ class Root:
                             close_min = int(item[4].split(':')[1])
                             index = idx
                 if index2 == -1 :
-                    for idx2,item2 in enumerate(l):
-                        if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) < close_hour :
-                            close_hour = int(item[4].split(':')[0])
-                            index2 = idx2
-                    if int(item[4].split(':')[0]) == close_hour :
-                        if int(item[4].split(':')[1]) < close_min :
-                            close_min = int(item[4].split(':')[1])
-                            index = idx
-                if  int(l[index][3].split('.')[0])< 10:
-                    if  int(l[index][3].split('.')[1])< 10:
-                        if int(l[index][5].split(':')[0]) < 10:
-                            return '0', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
-                        else: 
-                            return '0', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
-                    else:
-                        if int(l[index][5].split(':')[0]) < 10:
-                            return '0', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
-                        else: 
-                            return '0', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
+                    for idx,item in enumerate(l):
+                        if int(item[4].split(':')[0]) > current_hour  and int(item[4].split(':')[0]) <= close_hour :
+                            if int(item[4].split(':')[0]) == close_hour :
+                                if int(item[4].split(':')[1]) < close_min :
+                                    close_min = int(item[4].split(':')[1])
+                                    index = idx
+                            if int(item[4].split(':')[0]) < close_hour :
+                                close_hour = int(item[4].split(':')[0])
+                                close_min = int(item[4].split(':')[1])
+                                index = idx
+            if  int(l[index][3].split('.')[0])< 10:
+                if  int(l[index][3].split('.')[1])< 10:
+                    if int(l[index][5].split(':')[0]) < 10:
+                        return '0', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
+                    else: 
+                        return '0', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
                 else:
-                    if  int(l[index][3].split('.')[1])< 10:
-                        if int(l[index][5].split(':')[0]) < 10:
-                            return '', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
-                        else: 
-                            return '', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
-                    else:
-                        if int(l[index][5].split(':')[0]) < 10:
-                            return '', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
-                        else: 
-                            return '', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
+                    if int(l[index][5].split(':')[0]) < 10:
+                        return '0', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
+                    else: 
+                        return '0', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
+            else:
+                if  int(l[index][3].split('.')[1])< 10:
+                    if int(l[index][5].split(':')[0]) < 10:
+                        return '', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
+                    else: 
+                        return '', l[index][3].split('.')[0], '/0', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
+                else:
+                    if int(l[index][5].split(':')[0]) < 10:
+                        return '', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' 0', l[index][5]
+                    else: 
+                        return '', l[index][3].split('.')[0], '/', l[index][3].split('.')[1], '/', l[index][3].split('.')[2][2:] ,' ', l[index][5]
             return ''
 
         if id == 'getcontact':
