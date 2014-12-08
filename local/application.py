@@ -24,6 +24,14 @@ locations = {
     'D2': 'green',
     'D3': 'red',
     'D4': 'green',
+    'E1': 'red',
+    'E2': 'green',
+    'E3': 'red',
+    'E4': 'green',
+    'F1': 'red',
+    'F2': 'green',
+    'F3': 'red',
+    'F4': 'green',
 }
 
 class Root:
@@ -58,6 +66,20 @@ class Root:
 
         if not os.path.exists('data.db'):
             self.GET(id='createdb')
+
+        elif id == 'sync':
+            if len(pargs) == 0 :
+                return 'No rowid is given is inserted'
+            # Connect to database
+            db = sqlite3.connect('data.db')
+            cursor = db.cursor()
+            cursor.execute('''SELECT * FROM reserve where id>=?''',(pargs[0],) )
+            l = []
+            for i in cursor.fetchall():
+                l.append(i[1:])
+            db.close()
+            return str(l).strip('[]')
+
 
         elif id == 'contact':
             first_name = pargs[0]
@@ -124,8 +146,7 @@ class Root:
                                              VALUES(?,?,?,?,?,?)''', (username, location, date, timefrom, timeto, note))
             db.commit()
             db.close()
-            id = cursor.lastrowid
-            print('reserve inserted', id)
+            print('reserve inserted', cursor.lastrowid )
             return 'Done'
 
         if id == 'getallfromdb':
