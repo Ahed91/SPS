@@ -5,7 +5,7 @@ import subprocess
 import requests
 
 def main():
-    log_cat_cmd = "adb -s emulator-5554 logcat -v raw SMSReceiver:D \*:S"
+    log_cat_cmd = "adb logcat -v raw SMSReceiver:D \*:S"
     p = subprocess.Popen([log_cat_cmd], shell=True, stdout=subprocess.PIPE)
     while 1:
         req = p.stdout.readline()

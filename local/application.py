@@ -6,6 +6,7 @@ import cherrypy
 import os.path
 import sqlite3
 import time
+import json
 from grequests import AsyncRequest
 
 locations = {
@@ -38,19 +39,61 @@ locations = {
 class Root:
 
     exposed = True
-
-    def GET(self, id=None, *pargs):
-
+    
+    @cherrypy.tools.accept(media='text/plain')
+    def GET(self, id=None, *pargs, **keywords):
+        
         if id == None:
-            raise cherrypy.HTTPRedirect('/index')
+            if cherrypy.session.get('username') == None:
+                raise cherrypy.HTTPRedirect("http://127.0.0.1:8080/sign") 
+            return file('static/main.html')
 
         elif id in locations:
             return('%s' % (locations[id]))
 
+        elif id == 'echo':
+            return  cherrypy.session.get('username')
+
+        elif id == 'login': 
+            email = keywords['email'] 
+            db = sqlite3.connect('data.db')
+            cursor = db.cursor()
+            cursor.execute('SELECT * FROM users where email = ?',(email,) )
+            l = cursor.fetchall()
+            db.close()
+            if l :
+               username = str(l[0][1])
+               cherrypy.session['username'] = username
+            raise cherrypy.HTTPRedirect("http://127.0.0.1:8080") 
+
+        elif id == 'signup':
+            username = keywords['username']
+            email = keywords['email']
+            password = keywords['password']
+            mobile = keywords['mobile']
+            db = sqlite3.connect('data.db')
+            cursor = db.cursor()
+            cursor.execute('''INSERT INTO users(username, email, password,mobile )
+                                         VALUES(?,?,?,?)''', (username, email, password, mobile))
+            db.commit()
+            db.close()
+            id = cursor.lastrowid
+            print('users inserted', id)
+            raise cherrypy.HTTPRedirect("http://127.0.0.1:8080/sign") 
+
+        elif id == 'records':
+            rec = {"total": 9,"records": [{ "recid": 1, "username": "ahed", "location": "Doe", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  },{ "recid": 2, "username": "Stuart", "location": "Motzart", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  },{ "recid": 3, "username": "Jin", "location": "Franson", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  },{ "recid": 4, "username": "Susan", "location": "Ottie", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  },{ "recid": 5, "username": "Kelly", "location": "Silver", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  },{ "recid": 6, "username": "Francis", "location": "Gatos", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  },{ "recid": 7, "username": "Mark", "location": "Welldo", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  },{ "recid": 8, "username": "Thomas", "location": "Bahh", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  },{ "recid": 9, "username": "Sergei", "location": "Rachmaninov", "date": "jdoe@gmail.com", "timefrom": "4/3/2012"  }]}
+            return json.dumps(rec) 
+            
         elif id == 'createdb':
             # Get a cursor 
             db = sqlite3.connect('data.db')
             cursor = db.cursor()
+            cursor.execute('''
+                       CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username TEXT, email TEXT,
+                                            password TEXT, mobile TEXT)   
+                           ''')
+            db.commit()
             cursor.execute('''
                        CREATE TABLE IF NOT EXISTS reserve(id INTEGER PRIMARY KEY, username TEXT,location TEXT,
                                             date TEXT, timefrom TEXT, timeto TEXT , note TEXT)   
@@ -398,6 +441,8 @@ class Root:
                     '''
 
         else:
+            if cherrypy.session.get('username') == None:
+                raise cherrypy.HTTPRedirect("http://127.0.0.1:8080/sign") 
             return('The %s is not defined ' % id)
 
     def PUT(self, location = None, value =None):
@@ -410,67 +455,124 @@ class Root:
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
 conf = {'/':
-            {'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
-            'tools.staticfile.root': current_dir },
+             {'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
+             'tools.staticfile.root': current_dir ,
+              },
 
 
-        '/index':
+        '/main':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/index.html'},
+            'static/main.html'},
 
-        '/img.html':
+        '/grid':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/img.html'},
+            'static/grid.html'},
+
+        '/sign':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/sign.html'},
 
         '/style.css':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/style.css'},
+            'static/css/style.css'},
+
+        '/css/sign.css':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/css/sign.css'},
+
+        '/css/reset.css':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/css/reset.css'},
 
         '/jquery.min.js':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/jquery.min.js'},
+            'static/js/jquery.min.js'},
 
         '/w2ui-1.4.2.min.js':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/w2ui-1.4.2.min.js'},
+            'static/js/w2ui-1.4.2.min.js'},
 
         '/w2ui-1.4.2.min.css':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/w2ui-1.4.2.min.css'},
+            'static/css/w2ui-1.4.2.min.css'},
 
         '/script.js':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/script.js'},
+            'static/js/script.js'},
+
+        '/js/main.js':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/js/main.js'},
+
+        '/js/modernizr.js':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/js/modernizr.js'},
 
          '/background.png':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/background.png'},
+            'static/img/background.png'},
 
          '/green.png':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/green.png'},
+            'static/img/green.png'},
 
          '/red.png':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/red.png'},
+            'static/img/red.png'},
 
-         '/contact.svg':
+         '/contact.png':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
-            'static/contact.svg'},
+            'static/img/contact.png'},
+
+         '/img/cd-logo.svg':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/img/cd-logo.svg'},
+
+         '/img/cd-icon-username.svg':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/img/cd-icon-username.svg'},
+
+         '/img/cd-icon-password.svg':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/img/cd-icon-password.svg'},
+
+         '/img/cd-icon-menu.svg':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/img/cd-icon-menu.svg'},
+
+         '/img/cd-icon-email.svg':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/img/cd-icon-email.svg'},
+
+         '/img/cd-icon-close.svg':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/img/cd-icon-close.svg'},
 
          'global':{
-                'server.socket_port':8080
+                'server.socket_port':8080,
+                'tools.sessions.on': True
                 }}
 cherrypy.quickstart(Root(), '/',conf
     )
