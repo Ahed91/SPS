@@ -29,10 +29,10 @@ locations = {
     'E1': 'red',
     'E2': 'green',
     'E3': 'red',
-    'E4': 'green',
+    'E4': 'red',
     'F1': 'red',
     'F2': 'green',
-    'F3': 'red',
+    'F3': 'green',
     'F4': 'green',
 }
 
@@ -48,7 +48,40 @@ class Root:
                 raise cherrypy.HTTPRedirect("http://127.0.0.1:8080/sign") 
             return file('static/main.html')
 
+        elif id == "alllocations":
+            A1 = locations['A1']
+            A2 = locations['A2']
+            A3 = locations['A3']
+            A4 = locations['A4']
+            B1 = locations['B1']
+            B2 = locations['B2']
+            B3 = locations['B3']
+            B4 = locations['B4']
+            C1 = locations['C1']
+            C2 = locations['C2']
+            C3 = locations['C3']
+            C4 = locations['C4']
+            D1 = locations['D1']
+            D2 = locations['D2']
+            D3 = locations['D3']
+            D4 = locations['D4']
+            E1 = locations['E1']
+            E2 = locations['E2']
+            E3 = locations['E3']
+            E4 = locations['E4']
+            F1 = locations['F1']
+            F2 = locations['F2']
+            F3 = locations['F3']
+            F4 = locations['F4']
+            return('%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s'
+                   % (A1,A2,A3,A4,B1,B2,B3,B4,C1,C2,C3,C4,D1,D2,D3,D4,E1,E2,E3,E4,F1,F2,F3,F4))
+
         elif id in locations:
+            if pargs :
+                if pargs[0] == 'green':
+                    locations[id] = 'green'
+                elif pargs[0] == 'red':
+                    locations[id] = 'red'
             return('%s' % (locations[id]))
 
         elif id == 'echo':
@@ -65,6 +98,19 @@ class Root:
                username = str(l[0][1])
                cherrypy.session['username'] = username
             raise cherrypy.HTTPRedirect("http://127.0.0.1:8080") 
+
+        elif id == 'login_app': 
+            email = keywords['email'] 
+            db = sqlite3.connect('data.db')
+            cursor = db.cursor()
+            cursor.execute('SELECT * FROM users where email = ?',(email,) )
+            l = cursor.fetchall()
+            db.close()
+            if l :
+               username = str(l[0][1])
+               cherrypy.session['username'] = username
+               return 'logged,%s'%(username)
+            return 'not logged'
 
         elif id == 'signup':
             username = keywords['username']

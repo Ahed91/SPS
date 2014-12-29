@@ -320,9 +320,6 @@ xsigin/signup popup
 .cd-form input.full-width {
   width: 100%;
 }
-.cd-form button.full-width {
-  width: 100%;
-}
 .cd-form input.has-padding {
   padding: 12px 20px 12px 50px;
 }
@@ -346,7 +343,7 @@ xsigin/signup popup
   /* space left for the HIDE button */
   padding-right: 65px;
 }
-.cd-form button[type=submit] {
+.cd-form input[type=submit] {
   padding: 16px 0;
   cursor: pointer;
   background: #2f889a;
