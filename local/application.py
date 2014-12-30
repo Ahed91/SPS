@@ -243,7 +243,7 @@ class Root:
     def getallfromdb(self):
         db = sqlite3.connect('data.db')
         cursor = db.cursor()
-        cursor.execute('SELECT * FROM reserve')
+        cursor.execute('SELECT * FROM users, reserve')
         l = []
         for _ in cursor.fetchall():
             l.append(_)
