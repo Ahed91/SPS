@@ -193,7 +193,7 @@ class Root:
 
     @cherrypy.expose
     def reserve(self,*pargs):
-        username = pargs[0]
+        username = cherrypy.session.get('username')
         location = pargs[1]
         date = pargs[2]
         timefrom = pargs[3]
@@ -473,6 +473,8 @@ class Root:
         cursor.execute('''DROP TABLE reserve''')
         db.commit()
         cursor.execute('''DROP TABLE contact''')
+        db.commit()
+        cursor.execute('''DROP TABLE users''')
         db.commit()
         db.close()
         return 'White Ya Database'
