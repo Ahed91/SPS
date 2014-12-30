@@ -544,6 +544,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 conf = {'/':
             {
             'tools.staticfile.root': current_dir ,
+            'tools.sessions.on': True
             },
 
 
@@ -659,7 +660,6 @@ conf = {'/':
 
          'global':{
                 'server.socket_port':8080,
-                'tools.sessions.on': True
                 }}
 
 cherrypy.engine.subscribe('start', createdb)
