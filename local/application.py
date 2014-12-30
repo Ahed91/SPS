@@ -12,7 +12,6 @@ import re
 from grequests import AsyncRequest
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-
 locations = {
     'A1': 'red',
     'A2': 'green',
@@ -42,6 +41,8 @@ locations = {
 
 class Root:
 
+    time_snap = time.time()
+
     exposed = True
     
     @cherrypy.expose
@@ -52,6 +53,9 @@ class Root:
         # if request for example /?location=A1 return it's value line 8 
         # if request for example /?location=A1&value=green  change A1 value to green
         if location :
+            if round(time.time() - Root.time_snap) > 5:
+                Root.time_snap = time.time()
+                self.update_indecators()
             if location in locations:  
                 if value == 'green':
                     locations[location] = 'green'
@@ -67,8 +71,45 @@ class Root:
         # if request / then return main.html
         raise cherrypy.HTTPRedirect("/main") 
 
+    def update_indecators(self):
+        current_date=time.strftime('%d.%m.%Y')
+        if current_date[0]=='0':
+            current_date = current_date[1:]
+        current_date =  re.sub('\.0', '.', current_date)
+        print  current_date 
+        db = sqlite3.connect(current_dir+'/data.db')
+        cursor = db.cursor()
+        timenow = time.strftime('%H:%M')
+        print timenow 
+        for k in locations:
+            cursor.execute('SELECT * FROM reserve where location =? and date=?',(k,current_date,))
+            l = cursor.fetchall()
+            print str(l)
+            locations[k]='green'
+            if l :
+                for i in l:
+                    if int(timenow.split(':')[0]) == int(i[4].split(':')[0]):
+                        if int(timenow.split(':')[1]) == int(i[4].split(':')[1]):
+                            locations[k]='red'
+                        elif int(timenow.split(':')[1]) > int(i[4].split(':')[1]):
+                            if int(timenow.split(':')[0]) == int(i[5].split(':')[0]):
+                                if int(timenow.split(':')[1]) < int(i[5].split(':')[1]):
+                                    locations[k]='red'
+                            elif int(timenow.split(':')[0]) < int(i[5].split(':')[0]):
+                                locations[k]='red'
+                    elif int(timenow.split(':')[0]) > int(i[4].split(':')[0]):
+                        if int(timenow.split(':')[0]) < int(i[5].split(':')[0]):
+                            locations[k]='red'
+                        if int(timenow.split(':')[0]) == int(i[5].split(':')[0]):
+                            if int(timenow.split(':')[1]) < int(i[5].split(':')[1]):
+                                locations[k]='red'
+
+
     @cherrypy.expose
     def alllocations(self):
+        if round(time.time()-Root.time_snap) > 5:
+            Root.time_snap = time.time()
+            self.update_indecators()
         A1 = locations['A1']
         A2 = locations['A2']
         A3 = locations['A3']
@@ -193,7 +234,7 @@ class Root:
 
     @cherrypy.expose
     def reserve(self,*pargs):
-        username = cherrypy.session.get('username')
+        username = pargs[0]
         location = pargs[1]
         date = pargs[2]
         timefrom = pargs[3]
@@ -207,6 +248,10 @@ class Root:
         # Connect to database
         db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
+        cursor.execute('SELECT * FROM users where username = ?',(username,) )
+        l = cursor.fetchall()
+        if not l :
+            username = cherrypy.session.get('username')
         cursor.execute('''SELECT * FROM reserve where date=?''',(date,) )
         for i in cursor.fetchall():
             if location == i[2]:
@@ -528,7 +573,7 @@ def createdb():
 
 def sync():
     # run this function every 5 sec
-    threading.Timer(10.0, sync).start()
+    threading.Timer(30.0, sync).start()
     # Connect to database
     db = sqlite3.connect(current_dir+'/data.db')
     cursor = db.cursor()
