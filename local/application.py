@@ -108,6 +108,7 @@ class Root:
         cursor = db.cursor()
         cursor.execute('SELECT * FROM users where email = ?',(email,) )
         l = cursor.fetchall()
+        print str(l)
         db.close()
         if l :
             username = str(l[0][1])
@@ -115,6 +116,8 @@ class Root:
                 cherrypy.session['username'] = username
             else:
                 return 'wrong password'
+        else:
+            return 'Please Sign up , before login' 
         raise cherrypy.HTTPRedirect("/main") 
 
     @cherrypy.expose
@@ -134,14 +137,18 @@ class Root:
                 return 'logged,%s'%(username)
             else:
                 return 'Not Matched Password'
+        else:
+            return 'Please Sign up , before login' 
         return 'Unregistered Email'
 
     @cherrypy.expose
     def signup(self, username, email, password, mobile):
+        print (username, email, password, mobile)
         p_email = re.compile('^([a-z]{1,5}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$')
         if not p_email.match(email):
             return 'Unaccepted Email'
         p_username = re.compile('^([a-z]{1,5}[0-9]{0,5}){1,20}$')
+        username = username.lower()
         if not p_username.match(username):
             return 'Unaccepted Username'
         p_mobile = re.compile('^([0-9]{7,20}|[+][0-9]{12,20})$')
@@ -149,7 +156,6 @@ class Root:
             return 'Unaccepted mobile'
         if len(password) < 6 :
             return 'Your password less than 6 characters'
-        username = username.lower()
         db = sqlite3.connect('data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM users where username = ? or email = ?',(username, email) )
@@ -243,8 +249,11 @@ class Root:
     def getallfromdb(self):
         db = sqlite3.connect('data.db')
         cursor = db.cursor()
-        cursor.execute('SELECT * FROM users, reserve')
+        cursor.execute('SELECT * FROM users')
         l = []
+        for _ in cursor.fetchall():
+            l.append(_)
+        cursor.execute('SELECT * FROM reserve')
         for _ in cursor.fetchall():
             l.append(_)
         db.close()
