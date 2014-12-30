@@ -115,7 +115,7 @@ class Root:
                 cherrypy.session['username'] = username
             else:
                 return 'wrong password'
-        raise cherrypy.HTTPRedirect("/") 
+        raise cherrypy.HTTPRedirect("/main") 
 
     @cherrypy.expose
     def login_app(self, email, password):
