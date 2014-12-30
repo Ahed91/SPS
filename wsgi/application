@@ -71,7 +71,7 @@ class Root:
                     locations[location] = 'red'
                 return('%s' % (locations[location]))
         # if request / then return main.html
-        return file('static/main.html')
+        raise cherrypy.HTTPRedirect("/main") 
 
     @cherrypy.expose
     def alllocations(self):

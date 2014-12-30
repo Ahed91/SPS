@@ -64,145 +64,145 @@ $(document).ready(function() {
 
   var myInterval = setInterval(function(){
     $.ajax({
-          url:document.URL + "?location="  + "A1"
+          url:document.URL.replace('main','') + "?location="  + "A1"
            }).success (function(responseText) {
            $("#A1").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "A2"
+          url:document.URL.replace('main','') + "?location="  + "A2"
            }).success (function(responseText) {
            $("#A2").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "A3"
+          url:document.URL.replace('main','') + "?location="  + "A3"
            }).success (function(responseText) {
            $("#A3").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "A4"
+          url:document.URL.replace('main','') + "?location="  + "A4"
            }).success (function(responseText) {
            $("#A4").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "B1"
+          url:document.URL.replace('main','') + "?location="  + "B1"
            }).success (function(responseText) {
            $("#B1").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "B2"
+          url:document.URL.replace('main','') + "?location="  + "B2"
            }).success (function(responseText) {
            $("#B2").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "B3"
+          url:document.URL.replace('main','') + "?location="  + "B3"
            }).success (function(responseText) {
            $("#B3").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "B4"
+          url:document.URL.replace('main','') + "?location="  + "B4"
            }).success (function(responseText) {
            $("#B4").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "C1"
+          url:document.URL.replace('main','') + "?location="  + "C1"
            }).success (function(responseText) {
            $("#C1").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "C2"
+          url:document.URL.replace('main','') + "?location="  + "C2"
            }).success (function(responseText) {
            $("#C2").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "C3"
+          url:document.URL.replace('main','') + "?location="  + "C3"
            }).success (function(responseText) {
            $("#C3").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "C4"
+          url:document.URL.replace('main','') + "?location="  + "C4"
            }).success (function(responseText) {
            $("#C4").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "D1"
+          url:document.URL.replace('main','') + "?location="  + "D1"
            }).success (function(responseText) {
            $("#D1").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "D2"
+          url:document.URL.replace('main','') + "?location="  + "D2"
            }).success (function(responseText) {
            $("#D2").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "D3"
+          url:document.URL.replace('main','') + "?location="  + "D3"
            }).success (function(responseText) {
            $("#D3").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "D4"
+          url:document.URL.replace('main','') + "?location="  + "D4"
            }).success (function(responseText) {
-           $("#E4").attr('src',responseText+'.png')
+           $("#D4").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "E1"
+          url:document.URL.replace('main','') + "?location="  + "E1"
            }).success (function(responseText) {
            $("#E1").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "E2"
+          url:document.URL.replace('main','') + "?location="  + "E2"
            }).success (function(responseText) {
            $("#E2").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "E3"
+          url:document.URL.replace('main','') + "?location="  + "E3"
            }).success (function(responseText) {
            $("#E3").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "E4"
+          url:document.URL.replace('main','') + "?location="  + "E4"
            }).success (function(responseText) {
            $("#E4").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "F1"
+          url:document.URL.replace('main','') + "?location="  + "F1"
            }).success (function(responseText) {
            $("#F1").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "F2"
+          url:document.URL.replace('main','') + "?location="  + "F2"
            }).success (function(responseText) {
            $("#F2").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "F3"
+          url:document.URL.replace('main','') + "?location="  + "F3"
            }).success (function(responseText) {
            $("#F3").attr('src',responseText+'.png')
            })
 
     $.ajax({
-          url:document.URL + "?location="  + "F4"
+          url:document.URL.replace('main','') + "?location="  + "F4"
            }).success (function(responseText) {
            $("#F4").attr('src',responseText+'.png')
            })
