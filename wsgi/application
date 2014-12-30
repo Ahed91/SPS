@@ -510,33 +510,34 @@ class Root:
                 '''
 
     @cherrypy.expose
+    def createdb(self):
+        # Get a cursor 
+        db = sqlite3.connect('data.db')
+        cursor = db.cursor()
+        cursor.execute('''
+               CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username TEXT, email TEXT,
+                                    password TEXT, mobile TEXT)   
+                   ''')
+        db.commit()
+        cursor.execute('''
+                   CREATE TABLE IF NOT EXISTS reserve(id INTEGER PRIMARY KEY, username TEXT,location TEXT,
+                                        date TEXT, timefrom TEXT, timeto TEXT , note TEXT)   
+                       ''')
+        db.commit()
+            
+        cursor.execute('''
+                   CREATE TABLE IF NOT EXISTS contact(id INTEGER PRIMARY KEY, firstname TEXT, lastname TEXT,
+                                        email TEXT, body TEXT)   
+                       ''')
+        db.commit()
+        db.close()
+        return 'Database Created'
+
+    @cherrypy.expose
     def default(self, *pargs, **kwargs):
         if cherrypy.session.get('username') == None:
             raise cherrypy.HTTPRedirect("/sign") 
         return('The %s is not defined '% (str(pargs)))
-
-def createdb():
-    # Get a cursor 
-    db = sqlite3.connect('data.db')
-    cursor = db.cursor()
-    cursor.execute('''
-               CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username TEXT, email TEXT,
-                                    password TEXT, mobile TEXT)   
-                   ''')
-    db.commit()
-    cursor.execute('''
-               CREATE TABLE IF NOT EXISTS reserve(id INTEGER PRIMARY KEY, username TEXT,location TEXT,
-                                    date TEXT, timefrom TEXT, timeto TEXT , note TEXT)   
-                   ''')
-    db.commit()
-        
-    cursor.execute('''
-               CREATE TABLE IF NOT EXISTS contact(id INTEGER PRIMARY KEY, firstname TEXT, lastname TEXT,
-                                    email TEXT, body TEXT)   
-                   ''')
-    db.commit()
-    db.close()
-    print 'Database Created'
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -662,7 +663,6 @@ conf = {'/':
                 'server.socket_port':8080,
                 }}
 
-cherrypy.engine.subscribe('start', createdb)
 application = cherrypy.Application(
         Root(), '/', conf
         )
