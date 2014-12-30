@@ -251,7 +251,12 @@ class Root:
         cursor.execute('SELECT * FROM users where username = ?',(username,) )
         l = cursor.fetchall()
         if not l :
-            username = cherrypy.session.get('username')
+            cursor.execute('SELECT * FROM users where mobile = ?',(username,) )
+            l = cursor.fetchall()
+            if l :
+                username = l[0][1]
+            else:
+                username = cherrypy.session.get('username')
         cursor.execute('''SELECT * FROM reserve where date=?''',(date,) )
         for i in cursor.fetchall():
             if location == i[2]:
