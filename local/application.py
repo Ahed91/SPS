@@ -526,43 +526,37 @@ def createdb():
 
 def sync():
     # run this function every 5 sec
-    threading.Timer(5.0, sync).start()
+    threading.Timer(10.0, sync).start()
     # Connect to database
     db = sqlite3.connect(current_dir+'/data.db')
     cursor = db.cursor()
-    cursor.execute('''SELECT * FROM reserve where id = (SELECT MAX(ID)  FROM reserve)''')
-    max_row = cursor.fetchone()
-    if max_row:
-        print type(max_row)
-        print max_row
-        print '''http://sps-ahmadghoul.rhcloud.com/sync?
-              username=%s&location=%s&date=%s&timefrom=%s&timeto=%s''' %(
-                  max_row[1], max_row[2], max_row[3], max_row[4], max_row[5])
-
-        #req = AsyncRequest('GET','''http://sps-ahmadghoul.rhcloud.com/sync?
-        #  username=%s&location=%s&date=%s&timefrom=%s&timeto=%s'''
-        #                   %(max_row[1], max_row[2], max_row[3], max_row[4], max_row[5]))
+    cursor.execute('''SELECT max(id) FROM reserve''')
+    max_id = cursor.fetchone()[0]
+    if max_id:
+        print type(max_id)
+        print max_id+1
+        req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(max_id+1))
     else:
-        print 'get all from net check if username = a to import all'
-        #req = AsyncRequest('GET','''http://sps-ahmadghoul.rhcloud.com/sync?
-        #  username=%s&location=%s&date=%s&timefrom=%s&timeto=%s'''
-        #                   %('a', 'a', 'a', 'a', 'a'))
-    #req.send()
-    #s = req.response.text.split(')')
-    #print s
-    #for i in range(0,len(s)):
-    #    if i==0:
-    #        a = s[i].replace('u\'','').replace('\'','').replace('(','').split(', ')
-    #    elif i== len(s)-1:
-    #        continue
-    #    else:
-    #        a = s[i].replace('u\'','').replace('\'','').replace(', (','').split(', ')
-    #    if len(a)<6 :
-    #        continue
-    #    cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
-    #                                 VALUES(?,?,?,?,?,?)''', (a[0], a[1], a[2], a[3], a[4], a[5]))
-    #    db.commit()
+        print max_id
+        req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/1')
+    req.send()
+    s = req.response.text.split(')')
+    print s
+    for i in range(0,len(s)):
+        if i==0:
+            a = s[i].replace('u\'','').replace('\'','').replace('(','').split(', ')
+        elif i== len(s)-1:
+            continue
+        else:
+            a = s[i].replace('u\'','').replace('\'','').replace(', (','').split(', ')
+        if len(a)<6 :
+            continue
+        cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
+                                     VALUES(?,?,?,?,?,?)''', (a[0], a[1], a[2], a[3], a[4], a[5]))
+        db.commit()
     db.close()
+    return 'yes'
+
 
 conf = {'/':
              {
