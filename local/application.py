@@ -536,8 +536,8 @@ def sync():
         print type(max_row)
         print max_row
         print '''http://sps-ahmadghoul.rhcloud.com/sync?
-              username=%s&location=%s&date=%s&timefrom=%s&timeto=%s''' %(
-                  max_row[1], max_row[2], max_row[3], max_row[4], max_row[5])
+              username=%s&location=%s&date=%s&timefrom=%s''' %(
+                  max_row[1], max_row[2], max_row[3], max_row[4] )
 
         #req = AsyncRequest('GET','''http://sps-ahmadghoul.rhcloud.com/sync?
         #  username=%s&location=%s&date=%s&timefrom=%s&timeto=%s'''
