@@ -89,7 +89,7 @@ class Root:
             current_date = current_date[1:]
         current_date =  re.sub('\.0', '.', current_date)
         print  current_date 
-        db = sqlite3.connect(current_dir+'/data.db')
+        db = sqlite3.connect(data_dir+'/data.db')
         cursor = db.cursor()
         timenow = time.strftime('%H:%M')
         print timenow 
@@ -336,6 +336,18 @@ class Root:
         for _ in cursor.fetchall():
             l.append(_)
         cursor.execute('SELECT * FROM reserve')
+        for _ in cursor.fetchall():
+            l.append(_)
+        db.close()
+        return str(l).strip('[]').replace('),','),</br>')
+
+    @cherrypy.expose
+    def getanydatefromdb(self,*pargs):
+        any_date= pargs[0]
+        db = sqlite3.connect(data_dir+'/data.db')
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM reserve where date=?',(any_date,))
+        l = []
         for _ in cursor.fetchall():
             l.append(_)
         db.close()

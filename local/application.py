@@ -310,6 +310,18 @@ class Root:
         return str(l).strip('[]').replace('),','),</br>')
 
     @cherrypy.expose
+    def getanydatefromdb(self,*pargs):
+        any_date= pargs[0]
+        db = sqlite3.connect(current_dir+'/data.db')
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM reserve where date=?',(any_date,))
+        l = []
+        for _ in cursor.fetchall():
+            l.append(_)
+        db.close()
+        return str(l).strip('[]').replace('),','),</br>')
+
+    @cherrypy.expose
     def gettodayfromdb(self):
         current_date=time.strftime('%d.%m.%Y')
         if current_date[0]=='0':
