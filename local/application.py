@@ -11,6 +11,8 @@ import json
 import re
 from grequests import AsyncRequest
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
 locations = {
     'A1': 'red',
     'A2': 'green',
@@ -63,7 +65,7 @@ class Root:
                     locations[location] = 'red'
                 return('%s' % (locations[location]))
         # if request / then return main.html
-        return file('static/main.html')
+        raise cherrypy.HTTPRedirect("/main") 
 
     @cherrypy.expose
     def alllocations(self):
@@ -104,11 +106,10 @@ class Root:
         p_email = re.compile('^([a-z]{1,5}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$')
         if not p_email.match(email):
             return 'Unaccepted Emial'
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM users where email = ?',(email,) )
         l = cursor.fetchall()
-        print str(l)
         db.close()
         if l :
             username = str(l[0][1])
@@ -125,7 +126,7 @@ class Root:
         p_email = re.compile('^([a-z]{1,5}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$')
         if not p_email.match(email):
             return 'Unaccepted Emial'
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM users where email = ?',(email,) )
         l = cursor.fetchall()
@@ -143,7 +144,6 @@ class Root:
 
     @cherrypy.expose
     def signup(self, username, email, password, mobile):
-        print (username, email, password, mobile)
         p_email = re.compile('^([a-z]{1,5}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$')
         if not p_email.match(email):
             return 'Unaccepted Email'
@@ -156,7 +156,7 @@ class Root:
             return 'Unaccepted mobile'
         if len(password) < 6 :
             return 'Your password less than 6 characters'
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM users where username = ? or email = ?',(username, email) )
         l = cursor.fetchall()
@@ -181,7 +181,7 @@ class Root:
         last_name = pargs[1]
         email = pargs[2]
         message = pargs[3]
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('''INSERT INTO contact(firstname, lastname, email, body)
                                      VALUES(?,?,?,?)''', (first_name, last_name, email, message))
@@ -205,7 +205,7 @@ class Root:
             if int(timefrom.split(':')[1]) >= int(timeto.split(':')[1]):
                 return 'Error Time Interval (timefrom min > timeto min)'
         # Connect to database
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('''SELECT * FROM reserve where date=?''',(date,) )
         for i in cursor.fetchall():
@@ -247,7 +247,7 @@ class Root:
 
     @cherrypy.expose
     def getallfromdb(self):
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM users')
         l = []
@@ -265,7 +265,7 @@ class Root:
         if current_date[0]=='0':
             current_date = current_date[1:]
         current_date =  re.sub('\.0', '.', current_date)
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM reserve where date=?',(current_date,))
         l = []
@@ -283,7 +283,7 @@ class Root:
             current_date = current_date[1:]
         current_date =  re.sub('\.0', '.', current_date)
         l=[]
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM reserve where date=? and location=?',(current_date,pargs[0]))
         for _ in cursor.fetchall():
@@ -325,7 +325,7 @@ class Root:
             current_date = current_date[1:]
         current_date =  re.sub('\.0', '.', current_date)
         l=[]
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM reserve where date=? and location=?',(current_date,pargs[0]))
         for _ in cursor.fetchall():
@@ -394,7 +394,7 @@ class Root:
             current_date = current_date[1:]
         current_date =  re.sub('\.0', '.', current_date)
         l=[]
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM reserve where date=? and location=?',(current_date, pargs[0]))
         for _ in cursor.fetchall():
@@ -456,7 +456,7 @@ class Root:
 
     @cherrypy.expose
     def getcontact(self):
-            db = sqlite3.connect('data.db')
+            db = sqlite3.connect(current_dir+'/data.db')
             cursor = db.cursor()
             cursor.execute('SELECT * FROM contact')
             l = []
@@ -468,7 +468,7 @@ class Root:
     @cherrypy.expose
     def cleardb(self):
         # Get a cursor object
-        db = sqlite3.connect('data.db')
+        db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('''DROP TABLE reserve''')
         db.commit()
@@ -502,7 +502,7 @@ def startup_init():
 
 def createdb():
     # Get a cursor 
-    db = sqlite3.connect('data.db')
+    db = sqlite3.connect(current_dir+'/data.db')
     cursor = db.cursor()
     cursor.execute('''
                CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username TEXT, email TEXT,
@@ -528,7 +528,7 @@ def sync():
     # run this function every 5 sec
     threading.Timer(5.0, sync).start()
     # Connect to database
-    db = sqlite3.connect('data.db')
+    db = sqlite3.connect(current_dir+'/data.db')
     cursor = db.cursor()
     cursor.execute('''SELECT * FROM reserve where id = (SELECT MAX(ID)  FROM reserve)''')
     max_row = cursor.fetchone()
@@ -563,8 +563,6 @@ def sync():
     #                                 VALUES(?,?,?,?,?,?)''', (a[0], a[1], a[2], a[3], a[4], a[5]))
     #    db.commit()
     db.close()
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
 
 conf = {'/':
              {
