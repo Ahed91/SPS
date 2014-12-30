@@ -1,0 +1,33 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>SPS HESH,HESH,,Haaa,Haa</title>
+
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" type="text/css" href="w2ui-1.4.2.min.css" />
+<link rel="stylesheet" type="text/css" href="m-buttons.min.css" />
+<script src="jquery.min.js"></script>
+<script type="text/javascript" src="w2ui-1.4.2.min.js"></script>
+</head>
+<body>
+ <div id="myGrid" style="height: 450px"></div>
+ <script>
+  $('#myGrid').w2grid({
+     name   : 'myGrid',
+     method : 'GET',
+     columns: [
+        { field: 'recid', caption: 'ID', size: '10%', sortable: true  },
+        { field: 'username',caption: 'User Name', size: '10%', sortable:true  },
+        { field: 'location', caption: 'Location', size: '10%', sortable:true  },
+        { field: 'date', caption: 'Date', size: '10%', sortable:true  },
+        { field: 'timefrom', caption: 'Time From', size: '10%', sortable:true  },
+        { field: 'timeto', caption: 'Time To', size: '10%', sortable:true  },
+        { field: 'note', caption: 'Note', size: '40%', sortable:true  },
+        ]
+     });
+   w2ui['myGrid'].load('records');
+ </script>
+</body>
+</html> 
+
