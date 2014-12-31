@@ -426,6 +426,8 @@ class Root:
             l.append(_)
         db.close()
         print l
+        if not l:
+            return 'None'
         current_min = int(time.strftime('%M'))
         current_hour = int(time.strftime('%H'))
         close_min = 59
@@ -494,6 +496,8 @@ class Root:
         for _ in cursor.fetchall():
             l.append(_)
         db.close()
+        if not l:
+            return 'None'
         print l
         current_min = int(time.strftime('%M'))
         current_hour = int(time.strftime('%H'))

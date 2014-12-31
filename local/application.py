@@ -42,6 +42,8 @@ locations = {
 class Root:
 
     time_snap = time.time()
+    time_snap2 = time.time()
+    lastrowid = 1
 
     exposed = True
     
@@ -380,6 +382,10 @@ class Root:
 
     @cherrypy.expose
     def timefrom(self, *pargs):
+        # check for sync
+        if round(time.time() - Root.time_snap2) > 30:
+            Root.time_snap2 = time.time()
+            sync()
         if len(pargs) == 0 :
             return 'No location is inserted'
         current_date=time.strftime('%d.%m.%Y')
@@ -394,6 +400,8 @@ class Root:
             l.append(_)
         db.close()
         print l
+        if not l:
+            return 'None'
         current_min = int(time.strftime('%M'))
         current_hour = int(time.strftime('%H'))
         close_min = 59
@@ -462,6 +470,8 @@ class Root:
         for _ in cursor.fetchall():
             l.append(_)
         db.close()
+        if not l:
+            return 'None'
         print l
         current_min = int(time.strftime('%M'))
         current_hour = int(time.strftime('%H'))
@@ -589,20 +599,10 @@ def createdb():
 
 
 def sync():
-    # run this function every 5 sec
-    threading.Timer(30.0, sync).start()
     # Connect to database
     db = sqlite3.connect(current_dir+'/data.db')
     cursor = db.cursor()
-    cursor.execute('''SELECT max(id) FROM reserve''')
-    max_id = cursor.fetchone()[0]
-    if max_id:
-        print type(max_id)
-        print max_id+1
-        req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(max_id+1))
-    else:
-        print max_id
-        req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/1')
+    req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(Root.lastrowid))
     req.send()
     s = req.response.text.split(')')
     print s
@@ -615,6 +615,7 @@ def sync():
             a = s[i].replace('u\'','').replace('\'','').replace(', (','').split(', ')
         if len(a)<6 :
             continue
+        Root.lastrowid += 1
         cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
                                      VALUES(?,?,?,?,?,?)''', (a[0], a[1], a[2], a[3], a[4], a[5]))
         db.commit()
