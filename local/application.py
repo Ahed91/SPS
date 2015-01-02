@@ -315,43 +315,137 @@ class Root:
             username = l[0][1]
         else:
             return 'Error mobile not registered'
-        cursor.execute('''SELECT * FROM reserve where date=?''',(current_date,) )
-        location = ''
-        for i in cursor.fetchall():
-            if int(timefrom.split(':')[0]) == int(i[4].split(':')[0]):
-                if int(timefrom.split(':')[1]) == int(i[4].split(':')[1]):
-                    print 'Choose another time or location(1timefrom equel old timrfrom)'
-                if int(timefrom.split(':')[1]) > int(i[4].split(':')[1]):
-                    if int(timefrom.split(':')[0]) == int(i[5].split(':')[0]):
-                        if int(timefrom.split(':')[1]) < int(i[5].split(':')[1]):
-                            print 'Choose another time or location(1timefrom min less than old timeto)'
-                    if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
-                        print 'Choose another time or location(1timefrom hour less than old timeto)'
-                if int(timefrom.split(':')[1]) < int(i[4].split(':')[1]):
-                    if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
-                        if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
-                            print 'Choose another time or location(1timeto min more than old timeto)'
-                    if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
-                        print 'Choose another time or location(1timeto hour more than old timeto)'
-            if int(timefrom.split(':')[0]) < int(i[4].split(':')[0]):
-                if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
-                    print 'Choose another time or location(2timeto hour more than old timefrom)'
-                if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
-                    if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
-                        print 'Choose another time or location(2timeto min more than old timefrom)'
-            if int(timefrom.split(':')[0]) > int(i[4].split(':')[0]):
-                if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
-                    print 'Choose another time or location(3timefrom hour less than old timeto)'
-                if int(timefrom.split(':')[0]) == int(i[5].split(':')[0]):
-                    if int(timefrom.split(':')[1]) < int(i[5].split(':')[1]):
-                        print 'Choose another time or location(3timefrom min less than old timeto)'
-            if location != '':
+        for location in locations:
+            if location == 'D3' or location == 'D4':
+                continue 
+            cursor.execute('''SELECT * FROM reserve where location=? and date=?''',(location, current_date,) )
+            l = cursor.fetchall()
+            if not l:
+                print 'there"s no reserve in %s today' %location
                 cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
-                                             VALUES(?,?,?,?,?,?)''', (username, i[2], current_date, timefrom, timeto, note))
+                                             VALUES(?,?,?,?,?,?)''', (username, location, current_date, timefrom, timeto, note))
                 db.commit()
                 db.close()
                 return 'Done'
-            return 'Undone'
+            for i in l:
+                empty = 1
+                print i
+                if int(timefrom.split(':')[0]) == int(i[4].split(':')[0]):
+                    if int(timefrom.split(':')[1]) == int(i[4].split(':')[1]):
+                        print 'Choose another time or location(1timefrom equel old timrfrom)'
+                        empty = 0
+                    if int(timefrom.split(':')[1]) > int(i[4].split(':')[1]):
+                        if int(timefrom.split(':')[0]) == int(i[5].split(':')[0]):
+                            if int(timefrom.split(':')[1]) < int(i[5].split(':')[1]):
+                                print 'Choose another time or location(1timefrom min less than old timeto)'
+                                empty = 0
+                        if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
+                            print 'Choose another time or location(1timefrom hour less than old timeto)'
+                            empty = 0
+                    if int(timefrom.split(':')[1]) < int(i[4].split(':')[1]):
+                        if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
+                            if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
+                                print 'Choose another time or location(1timeto min more than old timeto)'
+                                empty = 0
+                        if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
+                            print 'Choose another time or location(1timeto hour more than old timeto)'
+                            empty = 0
+                if int(timefrom.split(':')[0]) < int(i[4].split(':')[0]):
+                    if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
+                        print 'Choose another time or location(2timeto hour more than old timefrom)'
+                        empty = 0
+                    if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
+                        if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
+                            print 'Choose another time or location(2timeto min more than old timefrom)'
+                            empty = 0
+                if int(timefrom.split(':')[0]) > int(i[4].split(':')[0]):
+                    if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
+                        print 'Choose another time or location(3timefrom hour less than old timeto)'
+                        empty = 0
+                    if int(timefrom.split(':')[0]) == int(i[5].split(':')[0]):
+                        if int(timefrom.split(':')[1]) < int(i[5].split(':')[1]):
+                            print 'Choose another time or location(3timefrom min less than old timeto)'
+                            empty = 0
+                if empty == 1:
+                    print 'location %s' %location
+                    cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
+                                                 VALUES(?,?,?,?,?,?)''', (username, location, current_date, timefrom, timeto, note))
+                    db.commit()
+                    db.close()
+                    return 'Done'
+        return 'Undone'
+
+    @cherrypy.expose
+    def backup_reserve(self,*pargs):
+        location = pargs[0]
+        timefrom = pargs[1]
+        current_date=time.strftime('%d.%m.%Y')
+        if current_date[0]=='0':
+            current_date = current_date[1:]
+        current_date =  re.sub('\.0', '.', current_date)
+        # Connect to database
+        db = sqlite3.connect(current_dir+'/data.db')
+        cursor = db.cursor()
+        cursor.execute('''SELECT * FROM reserve where location=? and date=? and timefrom=?''',(location, current_date, timefrom) )
+        row = cursor.fetchone()
+        timeto = row[5]
+        for location in ['D3', 'D4']:
+            cursor.execute('''SELECT * FROM reserve where location=? and date=? ''',(location, current_date) )
+            l = cursor.fetchall()
+            if not l:
+                print 'there"s no reserve in %s today' %location
+                cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
+                                             VALUES(?,?,?,?,?,?)''', (row[1], location, row[3], row[4], row[5], row[6]))
+                db.commit()
+                db.close()
+                return 'Done'
+            for i in l:
+                empty = 1
+                print i
+                if int(timefrom.split(':')[0]) == int(i[4].split(':')[0]):
+                    if int(timefrom.split(':')[1]) == int(i[4].split(':')[1]):
+                        print 'Choose another time or location(1timefrom equel old timrfrom)'
+                        empty = 0
+                    if int(timefrom.split(':')[1]) > int(i[4].split(':')[1]):
+                        if int(timefrom.split(':')[0]) == int(i[5].split(':')[0]):
+                            if int(timefrom.split(':')[1]) < int(i[5].split(':')[1]):
+                                print 'Choose another time or location(1timefrom min less than old timeto)'
+                                empty = 0
+                        if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
+                            print 'Choose another time or location(1timefrom hour less than old timeto)'
+                            empty = 0
+                    if int(timefrom.split(':')[1]) < int(i[4].split(':')[1]):
+                        if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
+                            if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
+                                print 'Choose another time or location(1timeto min more than old timeto)'
+                                empty = 0
+                        if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
+                            print 'Choose another time or location(1timeto hour more than old timeto)'
+                            empty = 0
+                if int(timefrom.split(':')[0]) < int(i[4].split(':')[0]):
+                    if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
+                        print 'Choose another time or location(2timeto hour more than old timefrom)'
+                        empty = 0
+                    if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
+                        if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
+                            print 'Choose another time or location(2timeto min more than old timefrom)'
+                            empty = 0
+                if int(timefrom.split(':')[0]) > int(i[4].split(':')[0]):
+                    if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
+                        print 'Choose another time or location(3timefrom hour less than old timeto)'
+                        empty = 0
+                    if int(timefrom.split(':')[0]) == int(i[5].split(':')[0]):
+                        if int(timefrom.split(':')[1]) < int(i[5].split(':')[1]):
+                            print 'Choose another time or location(3timefrom min less than old timeto)'
+                            empty = 0
+                if empty == 1:
+                    print 'location %s' %location
+                    cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
+                                                 VALUES(?,?,?,?,?,?)''', (row[1], location, row[3], row[4], row[5], row[6]))
+                    db.commit()
+                    db.close()
+                    return 'Done'
+        return 'Undone'
 
     @cherrypy.expose
     def getallfromdb(self):
@@ -638,6 +732,9 @@ def createdb():
                CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, username TEXT, email TEXT,
                                     password TEXT, mobile TEXT)   
                    ''')
+    db.commit()
+    cursor.execute('''INSERT INTO users(username, email, password,mobile )
+                                 VALUES(?,?,?,?)''', ('admin', 'admin', '123456','0000000'))
     db.commit()
     cursor.execute('''
                CREATE TABLE IF NOT EXISTS reserve(id INTEGER PRIMARY KEY, username TEXT,location TEXT,

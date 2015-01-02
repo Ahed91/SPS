@@ -3,6 +3,9 @@
 # vim temp
 *.swp
 
+# sqlite3db
+*.db
+
 # C extensions
 *.so
 
