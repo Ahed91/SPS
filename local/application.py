@@ -43,7 +43,6 @@ class Root:
 
     time_snap = time.time()
     time_snap2 = time.time()
-    lastrowid = 1
 
     exposed = True
     
@@ -141,8 +140,7 @@ class Root:
 
     @cherrypy.expose
     def echo(self):
-#        return  cherrypy.session.get('username')
-        print  Root.lastrowid
+        return  cherrypy.session.get('username')
 
     @cherrypy.expose
     def login(self, email, password):
@@ -210,8 +208,6 @@ class Root:
                                      VALUES(?,?,?,?)''', (username, email, password, mobile))
         db.commit()
         db.close()
-        id = cursor.lastrowid
-        print('users inserted', id)
         raise cherrypy.HTTPRedirect("/sign") 
 
     @cherrypy.expose
@@ -231,8 +227,6 @@ class Root:
                                      VALUES(?,?,?,?)''', (first_name, last_name, email, message))
         db.commit()
         db.close()
-        id = cursor.lastrowid
-        print('contact inserted', id)
         return 'Thanks for your interest'
 
     @cherrypy.expose
@@ -295,7 +289,6 @@ class Root:
                                          VALUES(?,?,?,?,?,?)''', (username, location, date, timefrom, timeto, note))
         db.commit()
         db.close()
-        print('reserve inserted', cursor.lastrowid )
         return 'Done'
 
     @cherrypy.expose
@@ -357,7 +350,6 @@ class Root:
                                              VALUES(?,?,?,?,?,?)''', (username, i[2], current_date, timefrom, timeto, note))
                 db.commit()
                 db.close()
-                print('reserve inserted', cursor.lastrowid )
                 return 'Done'
             return 'Undone'
 
@@ -447,7 +439,7 @@ class Root:
     @cherrypy.expose
     def timefrom(self, *pargs):
         # check for sync
-        if round(time.time() - Root.time_snap2) > 30:
+        if round(time.time() - Root.time_snap2) > 60:
             Root.time_snap2 = time.time()
             sync()
         if len(pargs) == 0 :
@@ -636,7 +628,7 @@ class Root:
 
 def startup_init():
     createdb()
-    #sync()
+    sync()
 
 def createdb():
     # Get a cursor 
@@ -666,9 +658,14 @@ def sync():
     # Connect to database
     db = sqlite3.connect(current_dir+'/data.db')
     cursor = db.cursor()
+    cursor.execute('''SELECT max(id) FROM reserve''')
+    max_id = cursor.fetchone()[0]
+    if max_id == None:
+        print max_id , 'maxid None'
+        max_id = 0
     try:
-        req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(Root.lastrowid))
-        print 'http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(Root.lastrowid)
+        req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(max_id+1))
+        print 'http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(max_id+1)
         req.send()
         s = req.response.text.split(')')
         print s
@@ -684,7 +681,6 @@ def sync():
             a = s[i].replace('u\'','').replace('\'','').replace(', (','').split(', ')
         if len(a)<6 :
             continue
-        Root.lastrowid += 1
         cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
                                      VALUES(?,?,?,?,?,?)''', (a[0], a[1], a[2], a[3], a[4], a[5]))
         db.commit()
