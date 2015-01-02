@@ -20,11 +20,11 @@ def main():
         params = sms_body.split(" ")
         url = ""
         if len(params) == 4:
-            url = "http://sps-ahmadghoul.rhcloud.com/reserve/%s/%s/%s/%s/%s/%s"%(
-                  sms_sender, params[0], current_date, params[2], params[3], "SMS")
+            url = "http://sps-ahmadghoul.rhcloud.com/reserve_num/%s/%s/%s/%s"%(
+                  sms_sender, params[0], params[1], "SMS")
         elif len (params)==5:
-            url = "http://sps-ahmadghoul.rhcloud.com/reserve/%s/%s/%s/%s/%s/%s"%(
-                  sms_sender, params[0], current_date, params[2], params[3], params[4]+ "SMS")
+            url = "http://sps-ahmadghoul.rhcloud.com/reserve_num/%s/%s/%s/%s"%(
+                  sms_sender, params[0], params[1],  params[2]+ "SMS")
         if url != "":
             r = requests.get(url)
 

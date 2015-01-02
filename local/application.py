@@ -141,7 +141,8 @@ class Root:
 
     @cherrypy.expose
     def echo(self):
-        return  cherrypy.session.get('username')
+#        return  cherrypy.session.get('username')
+        print  Root.lastrowid
 
     @cherrypy.expose
     def login(self, email, password):
@@ -296,6 +297,69 @@ class Root:
         db.close()
         print('reserve inserted', cursor.lastrowid )
         return 'Done'
+
+    @cherrypy.expose
+    def reserve_num(self,*pargs):
+        username = pargs[0]
+        timefrom = pargs[1]
+        timeto = pargs[2]
+        note = pargs[3]
+        current_date=time.strftime('%d.%m.%Y')
+        if current_date[0]=='0':
+            current_date = current_date[1:]
+        current_date =  re.sub('\.0', '.', current_date)
+        if int(timefrom.split(':')[0]) > int(timeto.split(':')[0]):
+            return 'Error Time Interval (timefrom hour > timeto hour)'
+        if int(timefrom.split(':')[0]) == int(timeto.split(':')[0]):
+            if int(timefrom.split(':')[1]) >= int(timeto.split(':')[1]):
+                return 'Error Time Interval (timefrom min > timeto min)'
+        # Connect to database
+        db = sqlite3.connect(current_dir+'/data.db')
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM users where mobile = ?',(username,) )
+        l = cursor.fetchall()
+        if l :
+            username = l[0][1]
+        else:
+            return 'Error mobile not registered'
+        cursor.execute('''SELECT * FROM reserve where date=?''',(current_date,) )
+        location = ''
+        for i in cursor.fetchall():
+            if int(timefrom.split(':')[0]) == int(i[4].split(':')[0]):
+                if int(timefrom.split(':')[1]) == int(i[4].split(':')[1]):
+                    print 'Choose another time or location(1timefrom equel old timrfrom)'
+                if int(timefrom.split(':')[1]) > int(i[4].split(':')[1]):
+                    if int(timefrom.split(':')[0]) == int(i[5].split(':')[0]):
+                        if int(timefrom.split(':')[1]) < int(i[5].split(':')[1]):
+                            print 'Choose another time or location(1timefrom min less than old timeto)'
+                    if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
+                        print 'Choose another time or location(1timefrom hour less than old timeto)'
+                if int(timefrom.split(':')[1]) < int(i[4].split(':')[1]):
+                    if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
+                        if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
+                            print 'Choose another time or location(1timeto min more than old timeto)'
+                    if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
+                        print 'Choose another time or location(1timeto hour more than old timeto)'
+            if int(timefrom.split(':')[0]) < int(i[4].split(':')[0]):
+                if int(timeto.split(':')[0]) > int(i[4].split(':')[0]):
+                    print 'Choose another time or location(2timeto hour more than old timefrom)'
+                if int(timeto.split(':')[0]) == int(i[4].split(':')[0]):
+                    if int(timeto.split(':')[1]) > int(i[4].split(':')[1]):
+                        print 'Choose another time or location(2timeto min more than old timefrom)'
+            if int(timefrom.split(':')[0]) > int(i[4].split(':')[0]):
+                if int(timefrom.split(':')[0]) < int(i[5].split(':')[0]):
+                    print 'Choose another time or location(3timefrom hour less than old timeto)'
+                if int(timefrom.split(':')[0]) == int(i[5].split(':')[0]):
+                    if int(timefrom.split(':')[1]) < int(i[5].split(':')[1]):
+                        print 'Choose another time or location(3timefrom min less than old timeto)'
+            if location != '':
+                cursor.execute('''INSERT INTO reserve(username, location, date, timefrom, timeto, note)
+                                             VALUES(?,?,?,?,?,?)''', (username, i[2], current_date, timefrom, timeto, note))
+                db.commit()
+                db.close()
+                print('reserve inserted', cursor.lastrowid )
+                return 'Done'
+            return 'Undone'
 
     @cherrypy.expose
     def getallfromdb(self):
@@ -572,7 +636,7 @@ class Root:
 
 def startup_init():
     createdb()
-    sync()
+    #sync()
 
 def createdb():
     # Get a cursor 
@@ -602,10 +666,15 @@ def sync():
     # Connect to database
     db = sqlite3.connect(current_dir+'/data.db')
     cursor = db.cursor()
-    req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(Root.lastrowid))
-    req.send()
-    s = req.response.text.split(')')
-    print s
+    try:
+        req = AsyncRequest('GET','http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(Root.lastrowid))
+        print 'http://sps-ahmadghoul.rhcloud.com/sync/%s'%str(Root.lastrowid)
+        req.send()
+        s = req.response.text.split(')')
+        print s
+    except AttributeError:
+        print 'AttributeError'
+        return 'found AttributeError'
     for i in range(0,len(s)):
         if i==0:
             a = s[i].replace('u\'','').replace('\'','').replace('(','').split(', ')
