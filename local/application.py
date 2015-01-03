@@ -467,10 +467,10 @@ class Root:
         db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM reserve where date=?',(any_date,))
-        l = []
-        for _ in cursor.fetchall():
-            l.append(_)
+        l = cursor.fetchall()
         db.close()
+        if not l:
+            return 'None'
         return str(l).strip('[]').replace('),','),</br>')
 
     @cherrypy.expose
@@ -677,6 +677,86 @@ class Root:
         return ''
 
     @cherrypy.expose
+    def get_data_for_chart(self, location=None, hour=None):
+        if hour == None and location ==None :
+            return """
+                data = [{
+                    value: 10,
+                    color: "#949FB1",
+                    highlight: "#A8B3C5",
+                    label: "Grey"},
+                {
+                    value: 50,
+                    color: "#46BFBD",
+                    highlight: "#5AD3D1",
+                    label: "Green"
+                },]
+                    """
+        hour = int(hour)
+        current_date=time.strftime('%d.%m.%Y')
+        if current_date[0]=='0':
+            current_date = current_date[1:]
+        current_date =  re.sub('\.0', '.', current_date)
+        db = sqlite3.connect(current_dir+'/data.db')
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM reserve where date=? and location=?',(current_date, location))
+        pec = []
+        timefrom_array = []
+        timeto_array = []
+        data = ''
+        blue = '{value: %s, color: "#46BFBD", highlight: "#5AD3D1", label: "Reserved"},'
+        gray = '{value: %s, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"},'
+        for i in cursor.fetchall():
+            timefrom_array.append([int(i[4].split(':')[0]), int(i[4].split(':')[1])])
+            timeto_array.append([int(i[5].split(':')[0]), int(i[5].split(':')[1])])
+        for idx,i in enumerate(timefrom_array):
+            if i[0] == hour:
+                if timeto_array[idx][0] == hour:
+                    pec.append([i[1], timeto_array[idx][1]])
+                else:
+                    pec.append([i[1], 60])
+            if i[0] < hour:
+                if timeto_array[idx][0] == hour:
+                    pec.append([0, timeto_array[idx][1]])
+                elif timeto_array[idx][0] > hour:
+                    pec.append([0, 60])
+        pec_sorted = sorted(pec, key=lambda ss: pec[0])
+        for idx,i in enumerate(pec_sorted):
+            if idx==0:
+                if i[0] == 0:
+                    data += blue%str(i[1]-i[0])
+                else:
+                    data += gray%str(i[0])
+                    data += blue%str(i[1]-i[0])
+                if idx == len(pec_sorted)-1:
+                    data += gray%str(60-i[1])
+            elif idx==len(pec_sorted)-1:
+                if i[0] == pec_sorted[idx-1][1]:
+                    if i[1] == 59:
+                        data += blue%str(i[1]-i[0])
+                    else:
+                        data += blue%str(i[1]-i[0])
+                        data += gray%str(60 - i[1])
+                else:
+                    data += gray%str(i[0]-pec_sorted[idx-1][1])
+                    if i[1] == 59:
+                        data += blue%str(i[1]-i[0])
+                    else:
+                        data += blue%str(i[1]-i[0])
+                        data += gray%str(60 - i[1])
+            else:
+                if i[0] == pec_sorted[idx-1][1]:
+                    data += blue%str(i[1]-i[0])
+                else:
+                    data += gray%str(i[0]-pec_sorted[idx-1][1])
+                    data += blue%str(i[1]-i[0])
+        
+        if data == '':
+            data = 'data = [{value: 60, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"}]'
+        data_final = 'data = [' + data + ']'
+        return data_final
+
+    @cherrypy.expose
     def getcontact(self):
             db = sqlite3.connect(current_dir+'/data.db')
             cursor = db.cursor()
@@ -768,7 +848,10 @@ def sync():
         print s
     except AttributeError:
         print 'AttributeError'
-        return 'found AttributeError'
+        return 'found Attribute Error'
+    except :
+        print 'almost its ChannelFailures when the wireless is off'
+        return 'found ChannelFailures Error'
     for i in range(0,len(s)):
         if i==0:
             a = s[i].replace('u\'','').replace('\'','').replace('(','').split(', ')
@@ -850,6 +933,11 @@ conf = {'/':
             {'tools.staticfile.on': True,
             'tools.staticfile.filename':
             'static/js/modernizr.js'},
+
+        '/js/Chart.min.js':
+            {'tools.staticfile.on': True,
+            'tools.staticfile.filename':
+            'static/js/Chart.min.js'},
 
          '/background.png':
             {'tools.staticfile.on': True,

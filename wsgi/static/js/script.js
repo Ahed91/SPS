@@ -337,6 +337,7 @@ function reserve(loc) {
                 '        <div>'+
                 '           <textarea name="note" rows="4" style="width: 250px"></textarea>'+
                 '        </div>'+
+                '        <canvas id="myChart" width="400" height="400"></canvas> '+
                 '    </div>'+
                 '</div>'+
                 '<div class="w2ui-buttons">'+
@@ -375,14 +376,28 @@ function reserve(loc) {
                 },
                 "reset": function () { this.clear() },
             },
+            onChange: function(event){
+                if (event.target ==  'timefrom'){
+                    myRe = /^[0-9][0-9]:[0-9][0-9]$/
+                    if (myRe.test(event.value_new)){
+                       timefrom_hour = event.value_new.split(':')[0];
+                       $.ajax({
+                           url:document.URL.replace('main','') + "get_data_for_chart?location=" + loc + '&hour=' + timefrom_hour 
+                       }).success (function(responseText) {
+                           eval(responseText)
+                           draw_chart()
+                           })
+                    } 
+                }
+            }
         });
     }
     $().w2popup('open', {
         title   : 'Reserve a Location',
         body    : '<div id="form" style="width: 100%; height: 100%;"></div>',
         style   : 'padding: 15px 0px 0px 0px',
-        width   : 500,
-        height  : 300, 
+        width   : 450,
+        height  : 600, 
         showMax : true,
         onToggle: function (event) {
             $(w2ui.contact.box).hide();
@@ -397,7 +412,38 @@ function reserve(loc) {
                 $('#w2ui-popup #form').w2render('reserve');
                 w2ui['reserve'].record['location'] = loc; 
                 w2ui['reserve'].refresh();
+                $.ajax({
+                     url:document.URL.replace('main','') + "get_data_for_chart?location=" + loc + '&hour='+ new Date().getHours()
+                }).success (function(responseText) {
+                      eval(responseText)
+                      draw_chart()
+                })
+                draw_chart()
+
             }
-        }
+        },
     });
 }
+
+function draw_chart(hour) {
+var ctx = document.getElementById("myChart").getContext("2d");
+myDoughnutChart = new Chart(ctx).Doughnut(data);
+}
+
+var data = [
+{
+    value: 60,
+    color: "#949FB1",
+    highlight: "#A8B3C5",
+    label: "Empty"
+                                            
+},
+{
+    value: 0,
+    color: "#46BFBD",
+    highlight: "#5AD3D1",
+    label: "Reserved"
+                                            
+},
+]
+
