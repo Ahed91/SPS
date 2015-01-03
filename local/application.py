@@ -70,7 +70,7 @@ class Root:
                     locations[location] = 'red'
                 return('%s' % (locations[location]))
         # if request / then return main.html
-        raise cherrypy.HTTPRedirect("/main") 
+        return file(current_dir+'/static/main.html')
 
     def update_indecators(self):
         current_date=time.strftime('%d.%m.%Y')
@@ -161,7 +161,7 @@ class Root:
                 return 'wrong password'
         else:
             return 'Please Sign up , before login' 
-        raise cherrypy.HTTPRedirect("/main") 
+        return file(current_dir+'/static/main.html')
 
     @cherrypy.expose
     def login_app(self, email, password):
@@ -230,13 +230,20 @@ class Root:
         return 'Thanks for your interest'
 
     @cherrypy.expose
-    def reserve(self,*pargs):
-        username = pargs[0]
-        location = pargs[1]
-        date = pargs[2]
-        timefrom = pargs[3]
-        timeto = pargs[4]
-        note = pargs[5]
+    def reserve(self, *pargs, **kwargs):
+        if 'username' in kwargs.keys() :
+            username = kwargs['username']
+        else:
+            username = cherrypy.session.get('username')
+        location = pargs[0]
+        date = pargs[1]
+        timefrom = pargs[2]
+        timeto = pargs[3]
+        note = pargs[4]
+        if date[0]=='0':
+           date = date[1:]
+        date =  re.sub('\.0', '.', date)
+        print date
         if int(timefrom.split(':')[0]) > int(timeto.split(':')[0]):
             return 'Error Time Interval (timefrom hour > timeto hour)'
         if int(timefrom.split(':')[0]) == int(timeto.split(':')[0]):
@@ -245,15 +252,6 @@ class Root:
         # Connect to database
         db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
-        cursor.execute('SELECT * FROM users where username = ?',(username,) )
-        l = cursor.fetchall()
-        if not l :
-            cursor.execute('SELECT * FROM users where mobile = ?',(username,) )
-            l = cursor.fetchall()
-            if l :
-                username = l[0][1]
-            else:
-                username = cherrypy.session.get('username')
         cursor.execute('''SELECT * FROM reserve where date=?''',(date,) )
         for i in cursor.fetchall():
             if location == i[2]:
@@ -463,10 +461,13 @@ class Root:
 
     @cherrypy.expose
     def getanydatefromdb(self,*pargs):
-        any_date= pargs[0]
+        date= pargs[0]
+        if date[0]=='0':
+           date = date[1:]
+        date =  re.sub('\.0', '.', date)
         db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
-        cursor.execute('SELECT * FROM reserve where date=?',(any_date,))
+        cursor.execute('SELECT * FROM reserve where date=?',(date,))
         l = cursor.fetchall()
         db.close()
         if not l:
@@ -872,12 +873,6 @@ conf = {'/':
              {
              'tools.staticfile.root': current_dir ,
               },
-
-
-        '/main':
-            {'tools.staticfile.on': True,
-            'tools.staticfile.filename':
-            'static/main.html'},
 
         '/grid':
             {'tools.staticfile.on': True,

@@ -303,12 +303,6 @@ function reserve(loc) {
             formHTML: 
                 '<div class="w2ui-page page-0">'+
                 '    <div class="w2ui-field">'+
-                '        <label>Name :</label>'+
-                '        <div>'+
-                '           <input name="username" type="text" maxlength="100" style="width: 250px"/>'+
-                '        </div>'+
-                '    </div>'+
-                '    <div class="w2ui-field">'+
                 '        <label>Location:</label>'+
                 '        <div>'+
                 '           <input name="location" type="text" maxlength="2" style="width: 250px"/>'+
@@ -345,7 +339,6 @@ function reserve(loc) {
                 '    <button class="btn" name="save">Save</button>'+
                 '</div>',
             fields: [
-                { field: 'username', type: 'text', required: true },
                 { field: 'location', type: 'text', required: true },
                 { field: 'date', type: 'date',  options  : {
                         format: 'd.m.yyyy',
@@ -358,7 +351,6 @@ function reserve(loc) {
                 { field: 'note', type: 'text' },
             ],
             record: { 
-                username : 'Ahed',
                 location : loc,
                 date     : new Date().getDate()+'.'+(new Date().getMonth()+1)+'.'+new Date().getFullYear(),
                 timefrom         : new Date().getHours()+':00',
@@ -368,7 +360,7 @@ function reserve(loc) {
             actions: {
                 "save": function () { 
                     $.ajax({
-                          url:document.location['origin']+'/reserve/'+$('input#username').val()+'/'+$('input#location').val()+'/'+$('input#date').val()+'/'+$('input#timefrom').val()+'/'+$('input#timeto').val()+'/'+$('textarea#note').val()
+                          url:document.location['origin']+'/reserve/'+$('input#location').val()+'/'+$('input#date').val()+'/'+$('input#timefrom').val()+'/'+$('input#timeto').val()+'/'+$('textarea#note').val()
                             
                     }).success (function(responseText) {
                            alert(responseText)
