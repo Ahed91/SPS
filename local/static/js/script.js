@@ -332,7 +332,7 @@ function reserve(loc) {
                 '            <input name="timeto" type="time" style="width: 250px"/>'+
                 '        </div>'+
                 '    </div>'+
-                '    <div class="w2ui-field">'+
+                '    <div class="w2ui-field" id="div_chart">'+
                 '        <label>Note :</label>'+
                 '        <div>'+
                 '           <textarea name="note" rows="4" style="width: 250px"></textarea>'+
@@ -384,6 +384,8 @@ function reserve(loc) {
                        $.ajax({
                            url:document.URL.replace('main','') + "get_data_for_chart?location=" + loc + '&hour=' + timefrom_hour 
                        }).success (function(responseText) {
+                           $('#myChart').remove()
+                           $('#div_chart').append('<canvas id="myChart" width="400" height="400"></canvas>')
                            eval(responseText)
                            draw_chart()
                            })
@@ -415,6 +417,8 @@ function reserve(loc) {
                 $.ajax({
                      url:document.URL.replace('main','') + "get_data_for_chart?location=" + loc + '&hour='+ new Date().getHours()
                 }).success (function(responseText) {
+                      $('#myChart').remove()
+                      $('#div_chart').append('<canvas id="myChart" width="400" height="400"></canvas>')
                       eval(responseText)
                       draw_chart()
                 })
