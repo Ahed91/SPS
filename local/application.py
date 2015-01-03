@@ -752,7 +752,7 @@ class Root:
                     data += blue%str(i[1]-i[0])
         
         if data == '':
-            data = 'data = [{value: 60, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"}]'
+            data = '{value: 60, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"},'
         data_final = 'data = [' + data + ']'
         return data_final
 
