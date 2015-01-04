@@ -383,6 +383,21 @@ function reserve(loc) {
                            })
                     } 
                 }
+                if (event.target ==  'location'){
+                    myRe = /^[A-Z][0-9]$/
+                    if (myRe.test(event.value_new)){
+                       loca = event.value_new;
+                       timefrom_hour = $('input#timefrom') .val().split(':')[0]
+                       $.ajax({
+                           url: document.location['origin'] + "/get_data_for_chart?location=" + loca + '&hour=' + timefrom_hour 
+                       }).success (function(responseText) {
+                           $('#myChart').remove()
+                           $('#div_chart').append('<canvas id="myChart" width="400" height="400"></canvas>')
+                           eval(responseText)
+                           draw_chart()
+                           })
+                    } 
+                }
             }
         });
     }
