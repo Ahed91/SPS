@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>SPS Project By IUG Student</title>
+        <link rel="stylesheet" href="style.css" />
+        <link rel="stylesheet" type="text/css" href="w2ui-1.4.2.min.css" />
+        <script src="jquery.min.js"></script>
+        <script type="text/javascript" src="w2ui-1.4.2.min.js"></script>
+        <script src="js/Chart.min.js"></script>
+    </head>
+    <body>
+        <div id="form" style="width:750px;">
+            <div class="w2ui-page page-0">
+                <div class="w2ui-field">
+                    <label>Location:</label>
+                    <div>
+                       <input name="location" type="text" maxlength="2" style="width: 250px"/>
+                    </div>
+                </div>
+                <div class="w2ui-field">
+                    <label>Date:</label>
+                    <div>
+                        <input name="date" type="date" style="width: 250px"/>
+                    </div>
+                </div>
+                <div class="w2ui-field">
+                    <label>Start Time:</label>
+                    <div>
+                        <input name="timefrom" type="time" style="width: 250px"/>
+                    </div>
+                </div>
+                <div class="w2ui-field">
+                    <label>End Time:</label>
+                    <div>
+                        <input name="timeto" type="time" style="width: 250px"/>
+                    </div>
+                </div>
+                <div class="w2ui-field" id="div_chart">
+                    <label>Note :</label>
+                    <div>
+                       <textarea name="note" rows="4" style="width: 250px"></textarea>
+                    </div>
+                    <canvas id="myChart" width="300" height="300"></canvas> 
+                </div>
+            </div>
+            <div class="w2ui-buttons">
+                <button class="btn" name="reset">Reset</button>
+                <button class="btn" name="save">Save</button>
+            </div>
+        </div>
+        <script>
+        Re = /[A-Z][0-9]/
+        loc = location.search.match(Re)[0]
+
+          function draw_chart(hour) {
+              ctx = document.getElementById("myChart").getContext("2d");
+              myDoughnutChart = new Chart(ctx).Doughnut(data);
+          }
+          data = [{value: 60,
+                       color: "#949FB1",
+                       highlight: "#A8B3C5",
+                       label: "Empty"},
+                      {value: 0,
+                       color: "#46BFBD",
+                       highlight: "#5AD3D1",
+                       label: "Reserved"},]
+
+        
+        $('#form').w2form({
+            name: 'reserve',
+            style: 'border: 0px; background-color: transparent;',
+            fields: [
+                { field: 'location', type: 'text', required: true },
+                { field: 'date', type: 'date',  options  : {
+                        format: 'd.m.yyyy',
+                        start : new Date().getDate()+'.'+(new Date().getMonth()+1)+'.'+new Date().getFullYear(),
+                        end : new Date().getDate()+'.'+(new Date().getMonth()+1)+'.'+(new Date().getFullYear()+1)
+                                                           }
+                },
+                { field: 'timefrom', type: 'time', options: { format: 'h24', start:new Date().getHours()+':00' }},
+                { field: 'timeto', type: 'time', options: { format: 'h24', start:new Date().getHours()+':00' }},
+                { field: 'note', type: 'text' },
+            ],
+            record: { 
+                location : loc,
+                date     : new Date().getDate()+'.'+(new Date().getMonth()+1)+'.'+new Date().getFullYear(),
+                timefrom         : new Date().getHours()+':00',
+                timeto         : new Date().getHours()+':00',
+                note          : 'Anything else'
+            },
+            actions: {
+                "save": function () { 
+                    $.ajax({
+                          url:document.location['origin']+'/reserve/'+$('input#location').val()+'/'+$('input#date').val()+'/'+$('input#timefrom').val()+'/'+$('input#timeto').val()+'/'+$('textarea#note').val() + '?username=labview'
+                            
+                    }).success (function(responseText) {
+                           alert(responseText)
+                           $.ajax({
+                               url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + $('input#timefrom').val().split(':')[0]
+                               }).success (function(responseText) {
+                               $('#myChart').remove()
+                               $('#div_chart').append('<canvas id="myChart" width="300" height="300"></canvas>')
+                               eval(responseText)
+                               draw_chart()
+                               })
+                       })
+                },
+                "reset": function () { this.clear() },
+            },
+            onChange: function(event){
+                if (event.target ==  'timefrom'){
+                    myRe = /^[0-9][0-9]:[0-9][0-9]$/
+                    if (myRe.test(event.value_new)){
+                       timefrom_hour = event.value_new.split(':')[0];
+                       $.ajax({
+                           url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + timefrom_hour 
+                       }).success (function(responseText) {
+                           $('#myChart').remove()
+                           $('#div_chart').append('<canvas id="myChart" width="300" height="300"></canvas>')
+                           eval(responseText)
+                           draw_chart()
+                           })
+                    } 
+                }
+                if (event.target ==  'location'){
+                    myRe = /^[A-Z][0-9]$/
+                    if (myRe.test(event.value_new)){
+                       loc = event.value_new;
+                       timefrom_hour = $('input#timefrom') .val().split(':')[0]
+                       $.ajax({
+                           url: document.location['origin'] + "/get_data_for_chart?location=" + loc + '&hour=' + timefrom_hour 
+                       }).success (function(responseText) {
+                           $('#myChart').remove()
+                           $('#div_chart').append('<canvas id="myChart" width="300" height="300"></canvas>')
+                           eval(responseText)
+                           draw_chart()
+                           })
+                    } 
+                }
+            }
+        });
+
+        hour = location.search.split('hour=')[1]
+        $.ajax({
+           url: document.location['origin'] + "/get_data_for_chart?location=" + loc + '&hour=' + hour 
+           }).success (function(responseText) {
+           $('#myChart').remove()
+           $('#div_chart').append('<canvas id="myChart" width="300" height="300"></canvas>')
+           eval(responseText)
+           draw_chart()
+           })
+            
+        </script>
+    </body>
+</html> 
+

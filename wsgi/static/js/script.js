@@ -364,6 +364,14 @@ function reserve(loc) {
                             
                     }).success (function(responseText) {
                            alert(responseText)
+                           $.ajax({
+                           url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + $('input#timefrom').val().split(':')[0]
+                           }).success (function(responseText) {
+                           $('#myChart').remove()
+                           $('#div_chart').append('<canvas id="myChart" width="400" height="400"></canvas>')
+                           eval(responseText)
+                           draw_chart()
+                           })
                        })
                 },
                 "reset": function () { this.clear() },

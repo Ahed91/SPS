@@ -12,6 +12,7 @@ import sqlite3
 import time
 import json
 import re
+from util import color_variant
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -83,6 +84,10 @@ class Root:
                 return('%s' % (locations[location]))
         # if request / then return main.html
         return file(current_dir+'/static/main.html')
+
+    @cherrypy.expose
+    def labview(self, location=None, hour=None):
+        return file(current_dir+'/static/labview.html')
 
     def update_indecators(self):
         current_date=time.strftime('%d.%m.%Y')
@@ -708,21 +713,7 @@ class Root:
         return ''
 
     @cherrypy.expose
-    def get_data_for_chart(self, location=None, hour=None):
-        if hour == None and location ==None :
-            return """
-                data = [{
-                    value: 10,
-                    color: "#949FB1",
-                    highlight: "#A8B3C5",
-                    label: "Grey"},
-                {
-                    value: 50,
-                    color: "#46BFBD",
-                    highlight: "#5AD3D1",
-                    label: "Green"
-                },]
-                    """
+    def get_data_for_chart(self, location, hour):
         hour = int(hour)
         current_date=time.strftime('%d.%m.%Y')
         if current_date[0]=='0':
@@ -735,7 +726,7 @@ class Root:
         timefrom_array = []
         timeto_array = []
         data = ''
-        blue = '{value: %s, color: "#46BFBD", highlight: "#5AD3D1", label: "Reserved"},'
+        blue = '{value: %s, color: "%s", highlight: "%s", label: "Reserved"},'
         gray = '{value: %s, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"},'
         for i in cursor.fetchall():
             timefrom_array.append([int(i[4].split(':')[0]), int(i[4].split(':')[1])])
@@ -751,39 +742,47 @@ class Root:
                     pec.append([0, timeto_array[idx][1]])
                 elif timeto_array[idx][0] > hour:
                     pec.append([0, 60])
-        pec_sorted = sorted(pec, key=lambda ss: pec[0])
+        pec_sorted = sorted(pec, key=lambda x: x[0])
         for idx,i in enumerate(pec_sorted):
             if idx==0:
                 if i[0] == 0:
-                    data += blue%str(i[1]-i[0])
+                    [a, b] = color_variant(30)
+                    data += blue%(str(i[1]-i[0]), a, b)
                 else:
+                    [a, b] = color_variant(30)
                     data += gray%str(i[0])
-                    data += blue%str(i[1]-i[0])
+                    data += blue%(str(i[1]-i[0]), a, b)
                 if idx == len(pec_sorted)-1:
                     data += gray%str(60-i[1])
             elif idx==len(pec_sorted)-1:
                 if i[0] == pec_sorted[idx-1][1]:
                     if i[1] == 59:
-                        data += blue%str(i[1]-i[0])
+                        [a, b] = color_variant(30)
+                        data += blue%(str(i[1]-i[0]), a, b)
                     else:
-                        data += blue%str(i[1]-i[0])
+                        [a, b] = color_variant(30)
+                        data += blue%(str(i[1]-i[0]), a, b)
                         data += gray%str(60 - i[1])
                 else:
                     data += gray%str(i[0]-pec_sorted[idx-1][1])
                     if i[1] == 59:
-                        data += blue%str(i[1]-i[0])
+                        [a, b] = color_variant(30)
+                        data += blue%(str(i[1]-i[0]), a, b)
                     else:
-                        data += blue%str(i[1]-i[0])
+                        [a, b] = color_variant(30)
+                        data += blue%(str(i[1]-i[0]), a, b)
                         data += gray%str(60 - i[1])
             else:
                 if i[0] == pec_sorted[idx-1][1]:
-                    data += blue%str(i[1]-i[0])
+                    [a, b] = color_variant(30)
+                    data += blue%(str(i[1]-i[0]), a, b)
                 else:
+                    [a, b] = color_variant(30)
                     data += gray%str(i[0]-pec_sorted[idx-1][1])
-                    data += blue%str(i[1]-i[0])
+                    data += blue%(str(i[1]-i[0]), a, b)
         
         if data == '':
-            data = '{value: 60, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"}'
+            data = '{value: 60, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"},'
         data_final = 'data = [' + data + ']'
         return data_final
 
@@ -810,6 +809,31 @@ class Root:
         db.commit()
         db.close()
         return 'White Ya Database'
+
+    @cherrypy.expose
+    def clear(self, location = None, timefrom = None, username = None):
+        current_date=time.strftime('%d.%m.%Y')
+        if current_date[0]=='0':
+            current_date = current_date[1:]
+        current_date =  re.sub('\.0', '.', current_date)
+        db = sqlite3.connect(data_dir+'/data.db')
+        cursor = db.cursor()
+        if timefrom == None and username == None :
+            cursor.execute('DELETE FROM reserve where location=? and date=?',(location, current_date))
+            db.commit()
+            return "Done"
+
+        if timefrom != None :
+            cursor.execute('DELETE FROM reserve where location=? and date=? and timefrom=?',(location, current_date, timefrom))
+            db.commit()
+            return "Done"
+
+        if username != None :
+            cursor.execute('DELETE FROM reserve where id = (SELECT max(id) from reserve where username=?)',(username ,))
+            db.commit()
+            return "Done"
+        return "Undone"
+
 
     @cherrypy.expose
     def calls(self):
