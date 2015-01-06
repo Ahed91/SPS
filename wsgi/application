@@ -12,6 +12,7 @@ import sqlite3
 import time
 import json
 import re
+import random
 #from util import color_variant
 def color_variant(brightness_offset=1):
     hex_color = "#%06x" % random.randint(0,0xFFFFFF)
