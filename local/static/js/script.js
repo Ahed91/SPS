@@ -333,7 +333,7 @@ function reserve(loc) {
                     }).success (function(responseText) {
                            alert(responseText)
                            $.ajax({
-                           url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + $('input#timefrom').val().split(':')[0]
+                           url: document.location['origin'] + "/get_data_for_chart24?location=" + $('input#location').val() + '&hour=' + $('input#timefrom').val().split(':')[0]
                            }).success (function(responseText) {
                            $('#myChart').remove()
                            $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
@@ -348,7 +348,7 @@ function reserve(loc) {
                     }).success (function(responseText) {
                            alert(responseText)
                            $.ajax({
-                           url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + $('input#timefrom').val().split(':')[0]
+                           url: document.location['origin'] + "/get_data_for_chart24?location=" + $('input#location').val() + '&hour=' + $('input#timefrom').val().split(':')[0]
                            }).success (function(responseText) {
                            $('#myChart').remove()
                            $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
@@ -364,7 +364,7 @@ function reserve(loc) {
                     if (myRe.test(event.value_new)){
                        timefrom_hour = event.value_new.split(':')[0];
                        $.ajax({
-                           url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + timefrom_hour 
+                           url: document.location['origin'] + "/get_data_for_chart24?location=" + $('input#location').val() + '&hour=' + timefrom_hour 
                        }).success (function(responseText) {
                            $('#myChart').remove()
                            $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
@@ -379,7 +379,7 @@ function reserve(loc) {
                        loca = event.value_new;
                        timefrom_hour = $('input#timefrom') .val().split(':')[0]
                        $.ajax({
-                           url: document.location['origin'] + "/get_data_for_chart?location=" + loca + '&hour=' + timefrom_hour 
+                           url: document.location['origin'] + "/get_data_for_chart24?location=" + loca + '&hour=' + timefrom_hour 
                        }).success (function(responseText) {
                            $('#myChart').remove()
                            $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
@@ -412,7 +412,7 @@ function reserve(loc) {
                 w2ui['reserve'].record['location'] = loc; 
                 w2ui['reserve'].refresh();
                 $.ajax({
-                     url:document.location['origin'] + "/get_data_for_chart?location=" + loc + '&hour='+ new Date().getHours()
+                     url:document.location['origin'] + "/get_data_for_chart24?location=" + loc + '&hour='+ new Date().getHours()
                 }).success (function(responseText) {
                       $('#myChart').remove()
                       $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
@@ -428,7 +428,7 @@ function reserve(loc) {
 
 function draw_chart(hour) {
 var ctx = document.getElementById("myChart").getContext("2d");
-myDoughnutChart = new Chart(ctx).Doughnut(data);
+myDoughnutChart = new Chart(ctx).Doughnut(data,options);
 }
 
 var data = [
@@ -447,4 +447,33 @@ var data = [
                                             
 },
 ]
+options = {
+    //Boolean - Whether we should show a stroke on each segment
+    segmentShowStroke : false,
+
+    //String - The colour of each segment stroke
+    segmentStrokeColor : "#fff",
+
+    //Number - The width of each segment stroke
+    segmentStrokeWidth : 2,
+
+    //Number - The percentage of the chart that we cut out of the middle
+    percentageInnerCutout : 50, // This is 0 for Pie charts
+
+    //Number - Amount of animation steps
+    animationSteps : 100,
+
+    //String - Animation easing effect
+    animationEasing : "easeOutBounce",
+
+    //Boolean - Whether we animate the rotation of the Doughnut
+    animateRotate : true,
+
+    //Boolean - Whether we animate scaling the Doughnut from the centre
+    animateScale : false,
+
+    //String - A legend template
+    legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){%><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>"
+
+}
 

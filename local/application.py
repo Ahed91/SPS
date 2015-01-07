@@ -770,6 +770,85 @@ class Root:
             data = '{value: 60, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"},'
         data_final = 'data = [' + data + ']'
         return data_final
+   
+    @cherrypy.expose
+    def get_data_for_chart24(self, location, hour):
+        hour = int(hour)
+        current_date=time.strftime('%d.%m.%Y')
+        if current_date[0]=='0':
+            current_date = current_date[1:]
+        current_date =  re.sub('\.0', '.', current_date)
+        db = sqlite3.connect(current_dir+'/data.db')
+        cursor = db.cursor()
+        data = ''
+        blue = '{value: %s, color: "%s", highlight: "%s", label: "%s Reserved"},'
+        gray = '{value: %s, color: "#949FB1", highlight: "#A8B3C5", label: "%s Empty"},'
+        for h in range(0,24) :
+            hour = h
+            cursor.execute('SELECT * FROM reserve where date=? and location=?',(current_date, location))
+            pec = []
+            timefrom_array = []
+            timeto_array = []
+            for i in cursor.fetchall():
+                timefrom_array.append([int(i[4].split(':')[0]), int(i[4].split(':')[1])])
+                timeto_array.append([int(i[5].split(':')[0]), int(i[5].split(':')[1])])
+            for idx,i in enumerate(timefrom_array):
+                if i[0] == hour:
+                    if timeto_array[idx][0] == hour:
+                        pec.append([i[1], timeto_array[idx][1]])
+                    else:
+                        pec.append([i[1], 60])
+                if i[0] < hour:
+                    if timeto_array[idx][0] == hour:
+                        pec.append([0, timeto_array[idx][1]])
+                    elif timeto_array[idx][0] > hour:
+                        pec.append([0, 60])
+            pec_sorted = sorted(pec, key=lambda x: x[0])
+            if pec_sorted == []:
+                data +='{value: 60, color: "#949FB1", highlight: "#A8B3C5", label: "%s Empty"},'%(str(hour)+" o'clock")
+            for idx,i in enumerate(pec_sorted):
+                if idx==0:
+                    if i[0] == 0:
+                        [a, b] = color_variant(30)
+                        data += blue%(str(i[1]-i[0]), a, b, str(hour)+" o'clock")
+                    else:
+                        [a, b] = color_variant(30)
+                        data += gray%(str(i[0]), str(hour)+" o'clock")
+                        data += blue%(str(i[1]-i[0]), a, b, str(hour)+" o'clock")
+                    if idx == len(pec_sorted)-1:
+                        data += gray%(str(60-i[1]), str(hour)+" o'clock")
+                elif idx==len(pec_sorted)-1:
+                    if i[0] == pec_sorted[idx-1][1]:
+                        if i[1] == 59:
+                            [a, b] = color_variant(30)
+                            data += blue%(str(i[1]-i[0]), a, b, str(hour)+" o'clock")
+                        else:
+                            [a, b] = color_variant(30)
+                            data += blue%(str(i[1]-i[0]), a, b, str(hour)+" o'clock")
+                            data += gray%(str(60 - i[1]), str(hour)+" o'clock")
+                    else:
+                        data += gray%(str(i[0]-pec_sorted[idx-1][1]), str(hour)+" o'clock")
+                        if i[1] == 59:
+                            [a, b] = color_variant(30)
+                            data += blue%(str(i[1]-i[0]), a, b, str(hour)+" o'clock")
+                        else:
+                            [a, b] = color_variant(30)
+                            data += blue%(str(i[1]-i[0]), a, b, str(hour)+" o'clock")
+                            data += gray%(str(60 - i[1]), str(hour)+" o'clock")
+                else:
+                    if i[0] == pec_sorted[idx-1][1]:
+                        [a, b] = color_variant(30)
+                        data += blue%(str(i[1]-i[0]), a, b, str(hour)+" o'clock")
+                    else:
+                        [a, b] = color_variant(30)
+                        data += gray%(str(i[0]-pec_sorted[idx-1][1]), str(hour)+" o'clock")
+                        data += blue%(str(i[1]-i[0]), a, b, str(hour)+" o'clock")
+            
+        if data == '':
+            data = '{value: 60, color: "#949FB1", highlight: "#A8B3C5", label: "Empty"},'
+        data_final = 'data = [' + data + ']'
+        db.close()
+        return data_final
 
     @cherrypy.expose
     def getcontact(self):
