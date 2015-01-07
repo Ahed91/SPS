@@ -1,5 +1,5 @@
 jQuery(document).ready(function($){
-	var $form_modal = $('.cd-user-modal'),
+	    $form_modal = $('.cd-user-modal'),
 		$form_login = $form_modal.find('#cd-login'),
 		$form_signup = $form_modal.find('#cd-signup'),
 		$form_forgot_password = $form_modal.find('#cd-reset-password'),
@@ -8,7 +8,15 @@ jQuery(document).ready(function($){
 		$tab_signup = $form_modal_tab.children('li').eq(1).children('a'),
 		$forgot_password_link = $form_login.find('.cd-form-bottom-message a'),
 		$back_to_login_link = $form_forgot_password.find('.cd-form-bottom-message a'),
-		$main_nav = $('.main-nav');
+		$main_nav = $('.main-nav'),
+        email_error = $form_modal.find('span').eq(0),
+        password_error = $form_modal.find('span').eq(1),
+        username_error = $form_modal.find('span').eq(2),
+        email_sign_error = $form_modal.find('span').eq(3),
+        password_sign_error = $form_modal.find('span').eq(4),
+        mobile_error = $form_modal.find('span').eq(5),
+        terms_error = $form_modal.find('span').eq(6);
+        email_forget_error = $form_modal.find('span').eq(7);
 
 	//open modal
 	$main_nav.on('click', function(event){
@@ -68,7 +76,34 @@ jQuery(document).ready(function($){
 		event.preventDefault();
 		login_selected();
 	});
-
+    // on focus hide errors
+    $form_login.find('input[name="email"]').bind('focus',function(){
+        email_error.removeClass('is-visible')
+    });
+    $form_login.find('input[name="password"]').bind('focus',function(){
+        password_error.removeClass('is-visible')
+    });
+    $form_signup.find('input[name="username"]').bind('focus',function(){
+        username_error.removeClass('is-visible')
+    });
+    $form_signup.find('input[name="email"]').bind('focus',function(){
+        email_sign_error.removeClass('is-visible')
+    });
+    $form_signup.find('input[name="password"]').bind('focus',function(){
+        password_sign_error.removeClass('is-visible')
+    });
+    $form_signup.find('input[name="mobile"]').bind('focus',function(){
+        mobile_error.removeClass('is-visible')
+    });
+    $form_signup.find('input[name="username"]').bind('focus',function(){
+        username_error.removeClass('is-visible')
+    });
+    $form_signup.find('input[type="checkbox"]').bind('click',function(){
+        terms_error.removeClass('is-visible')
+    });
+    $form_forgot_password.find('input[type="email"]').bind('focus',function(){
+        email_forget_error.removeClass('is-visible')
+    });
 	function login_selected(){
 		$form_login.addClass('is-selected');
 		$form_signup.removeClass('is-selected');
@@ -91,16 +126,91 @@ jQuery(document).ready(function($){
 		$form_forgot_password.addClass('is-selected');
 	}
 
-	//REMOVE THIS - it's just to show error messages 
 	$form_login.find('input[type="submit"]').on('click', function(event){
 		event.preventDefault();
-        $form_login.find(".cd-form").submit()
+        re_email = /^([a-z]{1,5}[.]{0,1}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$/
+        re_password = /^.{6,20}$/
+        var email = $form_login.find('input[name=email]')
+        var password = $form_login.find('input[name=password]')
+        var send_login_details = true
+        if (!re_email.test(email.val())){
+            send_login_details = false
+            email_error.addClass('is-visible')
+            email_error.text('Please enter a valid email address')
+        }
+        if (!re_password.test(password.val())){
+            send_login_details = false
+            password_error.addClass('is-visible')
+        }
+        if (send_login_details){
+            $.ajax({
+              url:document.location['origin'] + "/login?email="  + email.val() + "&password=" + password.val()
+            }).success (function(responseText) {
+                 if (responseText == "Done")
+                   window.open(document.location['origin'] + '/main', '_self')
+                 else if (responseText == "Please Sign up"){
+                   email_error.text('Please Sign up before login')
+                   email_error.addClass('is-visible')}
+            });
+        }
 	});
 	$form_signup.find('input[type="submit"]').on('click', function(event){
 		event.preventDefault();
-        $form_signup.find(".cd-form").submit()
+        re_email = /^([a-z]{1,5}[.]{0,1}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$/
+        re_password = /^.{6,20}$/
+        re_username = /^([a-z]{1,5}[0-9]{0,5}){1,20}$/
+        re_mobile = /^([0-9]{7,20}|[+][0-9]{12,20})$/
+        var username  = $form_signup.find('input[name=username]')
+        var email = $form_signup.find('input[name=email]')
+        var password = $form_signup.find('input[name=password]')
+        var mobile = $form_signup.find('input[name=mobile]')
+        var send_signup_details = true
+        var is_terms_accepted = $('#accept-terms').prop('checked')
+        if (!re_username.test(username.val())){
+            send_signup_details = false
+            username_error.addClass('is-visible')
+            username_error.text('Please enter a valid username which is begin with a letter , the letters are lower case and numbers')}
+        if (!re_email.test(email.val())){
+            send_signup_details = false
+            email_sign_error.addClass('is-visible')
+            email_sign_error.text('Please enter a valid email')}
+        if (!re_password.test(password.val())){
+            send_signup_details = false
+            password_sign_error.addClass('is-visible')}
+        if (!re_mobile.test(mobile.val())){
+            send_signup_details = false
+            mobile_error.addClass('is-visible')}
+        if (!is_terms_accepted){
+            send_signup_details = false
+            terms_error.addClass('is-visible')}
+        if (send_signup_details){
+            $.ajax({
+              url:document.location['origin'] + "/signup?email="  + email.val() + "&password=" + password.val() + '&username=' + username.val() + '&mobile=' + mobile.val()
+            }).success (function(responseText) {
+                 if (responseText == "Done")
+                   window.open(document.location['origin'] + '/sign', '_self')
+                 else if (responseText == "username_error"){
+                   username_error.text('Please choose another username')
+                   username_error.addClass('is-visible')}
+                 else if (responseText == "email_error"){
+                   email_sign_error.text('Please choose another email')
+                   email_sign_error.addClass('is-visible')}
+            });
+        }
 	});
-
+	$form_forgot_password.find('input[type="submit"]').on('click', function(event){
+		event.preventDefault();
+        re_email = /^([a-z]{1,5}[.]{0,1}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$/
+        var email = $form_forgot_password.find('input[type=email]')
+        var send_forget_details = true
+        if (!re_email.test(email.val())){
+            send_forget_details = false
+            email_forget_error.addClass('is-visible')
+        }
+        if (send_forget_details){
+            console.log('not implemented')
+        }
+	});
 
 	//IE9 placeholder fallback
 	//credits http://www.hagenburger.net/BLOG/HTML5-Input-Placeholder-Fix-With-jQuery.html

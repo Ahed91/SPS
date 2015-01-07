@@ -173,9 +173,9 @@ class Root:
     @cherrypy.expose
     def login(self, email, password):
         print email
-        p_email = re.compile('^([a-z]{1,5}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$')
+        p_email = re.compile('^([a-z]{1,5}[.]{0,1}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$')
         if not p_email.match(email):
-            return 'Unaccepted Emial'
+            return 'Unaccepted Email'
         db = sqlite3.connect(data_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM users where email = ?',(email,) )
@@ -186,16 +186,23 @@ class Root:
             if password == str(l[0][3]):
                 cherrypy.session['username'] = username
             else:
-                return 'wrong password'
+                return 'Wrong Password'
         else:
-            return 'Please Sign up , before login' 
+            return 'Please Sign up' 
+        return "Done"
+
+    @cherrypy.expose
+    def main(self):
+        # check if not logged in then redirect to signup
+        if cherrypy.session.get('username') == None:
+            raise cherrypy.HTTPRedirect("/sign") 
         return file(current_dir+'/static/main.html')
 
     @cherrypy.expose
     def login_app(self, email, password):
         p_email = re.compile('^([a-z]{1,5}[0-9]{0,5}){1,20}@([a-z]{1,5}[0-9]{0,5}){1,20}[.](com|org|net|ps)$')
         if not p_email.match(email):
-            return 'Unaccepted Emial'
+            return 'Unaccepted Email'
         db = sqlite3.connect(data_dir+'/data.db')
         cursor = db.cursor()
         cursor.execute('SELECT * FROM users where email = ?',(email,) )
@@ -228,15 +235,17 @@ class Root:
             return 'Your password less than 6 characters'
         db = sqlite3.connect(data_dir+'/data.db')
         cursor = db.cursor()
-        cursor.execute('SELECT * FROM users where username = ? or email = ?',(username, email) )
-        l = cursor.fetchall()
-        if l :
-            return 'Please choose another username/email'
+        cursor.execute('SELECT * FROM users where username = ?',(username,) )
+        if cursor.fetchall():
+            return 'username_error'
+        cursor.execute('SELECT * FROM users where email = ?',(email,) )
+        if cursor.fetchall():
+            return 'email_error'
         cursor.execute('''INSERT INTO users(username, email, password,mobile )
                                      VALUES(?,?,?,?)''', (username, email, password, mobile))
         db.commit()
         db.close()
-        raise cherrypy.HTTPRedirect("/sign") 
+        return 'Done'
         
     @cherrypy.expose
     def records(self):
