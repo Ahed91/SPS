@@ -169,6 +169,11 @@ class Root:
         return "Done"
 
     @cherrypy.expose
+    def logout(self):
+        cherrypy.session['username'] = None
+        raise cherrypy.HTTPRedirect("/sign") 
+
+    @cherrypy.expose
     def main(self):
         # check if not logged in then redirect to signup
         if cherrypy.session.get('username') == None:
@@ -231,14 +236,15 @@ class Root:
             
     @cherrypy.expose
     def contact(self,*pargs):
-        first_name = pargs[0]
-        last_name = pargs[1]
-        email = pargs[2]
-        message = pargs[3]
+        message = pargs[0]
+        username = cherrypy.session['username']
         db = sqlite3.connect(current_dir+'/data.db')
         cursor = db.cursor()
+        cursor.execute('SELECT * FROM users where username= ?',(username,) )
+        row = cursor.fetchone()
+        print row
         cursor.execute('''INSERT INTO contact(firstname, lastname, email, body)
-                                     VALUES(?,?,?,?)''', (first_name, last_name, email, message))
+                                     VALUES(?,?,?,?)''', (username, row[4], row[2], message))
         db.commit()
         db.close()
         return 'Thanks for your interest'
@@ -809,6 +815,8 @@ class Root:
             return "Done"
 
         if username != None :
+            if username == 'this':
+               username =  cherrypy.session.get('username')
             cursor.execute('DELETE FROM reserve where id = (SELECT max(id) from reserve where username=?)',(username ,))
             db.commit()
             return "Done"

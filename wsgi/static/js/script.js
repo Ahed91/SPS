@@ -1,6 +1,6 @@
 // test 
-function test(){
-alert('ahed')
+function logout(){
+   window.open(document.location['origin'] + '/logout', '_self')
 }
 $(document).ready(function() {
     
@@ -218,24 +218,6 @@ function contact () {
             formHTML: 
                 '<div class="w2ui-page page-0">'+
                 '    <div class="w2ui-field">'+
-                '        <label>First Name:</label>'+
-                '        <div>'+
-                '           <input name="first_name" type="text" maxlength="100" style="width: 250px"/>'+
-                '        </div>'+
-                '    </div>'+
-                '    <div class="w2ui-field">'+
-                '        <label>Last Name:</label>'+
-                '        <div>'+
-                '            <input name="last_name" type="text" maxlength="100" style="width: 250px"/>'+
-                '        </div>'+
-                '    </div>'+
-                '    <div class="w2ui-field">'+
-                '        <label>Email:</label>'+
-                '        <div>'+
-                '            <input name="email" type="text" style="width: 250px"/>'+
-                '        </div>'+
-                '    </div>'+
-                '    <div class="w2ui-field">'+
                 '        <label>body :</label>'+
                 '        <div>'+
                 '           <textarea name="body" rows="4" style="width: 250px"></textarea>'+
@@ -243,31 +225,23 @@ function contact () {
                 '    </div>'+
                 '</div>'+
                 '<div class="w2ui-buttons">'+
-                '    <button class="btn" name="reset">Reset</button>'+
                 '    <button class="btn" name="save">Save</button>'+
                 '</div>',
             fields: [
-                { field: 'first_name', type: 'text', required: true },
-                { field: 'last_name', type: 'text', required: true },
-                { field: 'email', type: 'email' },
                 { field: 'body', type: 'text' },
             ],
             record: { 
-                first_name    : 'Ahed',
-                last_name     : 'Eid',
-                email         : 'Ahed@email.com',
-                body          : 'sample text sample text sample text sample text sample text sample text sample text'
+                body          : ''
             },
             actions: {
                 "save": function () { 
                     $.ajax({
-                          url:document.location['origin']+'/contact/'+$('input#first_name').val()+'/'+$('input#last_name').val()+'/'+$('input#email').val()+'/'+$('textarea#body').val()
+                          url:document.location['origin']+'/contact/'+$('textarea#body').val()
                             
                     }).success (function(responseText) {
                            alert(responseText)
                     })
-                },
-                "reset": function () { this.clear(); },
+                }
             }
         });
     }
@@ -327,15 +301,11 @@ function reserve(loc) {
                 '        </div>'+
                 '    </div>'+
                 '    <div class="w2ui-field" id="div_chart">'+
-                '        <label>Note :</label>'+
-                '        <div>'+
-                '           <textarea name="note" rows="4" style="width: 250px"></textarea>'+
-                '        </div>'+
-                '        <canvas id="myChart" width="400" height="400"></canvas> '+
+                '        <canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas> '+
                 '    </div>'+
                 '</div>'+
                 '<div class="w2ui-buttons">'+
-                '    <button class="btn" name="reset">Reset</button>'+
+                '    <button class="btn" name="cancel">Cancel last reserve</button>'+
                 '    <button class="btn" name="save">Save</button>'+
                 '</div>',
             fields: [
@@ -348,19 +318,17 @@ function reserve(loc) {
                 },
                 { field: 'timefrom', type: 'time', options: { format: 'h24', start:new Date().getHours()+':00' }},
                 { field: 'timeto', type: 'time', options: { format: 'h24', start:new Date().getHours()+':00' }},
-                { field: 'note', type: 'text' },
             ],
             record: { 
                 location : loc,
                 date     : new Date().getDate()+'.'+(new Date().getMonth()+1)+'.'+new Date().getFullYear(),
                 timefrom         : new Date().getHours()+':00',
                 timeto         : new Date().getHours()+':00',
-                note          : 'Anything else'
             },
             actions: {
                 "save": function () { 
                     $.ajax({
-                          url:document.location['origin']+'/reserve/'+$('input#location').val()+'/'+$('input#date').val()+'/'+$('input#timefrom').val()+'/'+$('input#timeto').val()+'/'+$('textarea#note').val()
+                          url:document.location['origin']+'/reserve/'+$('input#location').val()+'/'+$('input#date').val()+'/'+$('input#timefrom').val()+'/'+$('input#timeto').val()+'/'+'fromweb'
                             
                     }).success (function(responseText) {
                            alert(responseText)
@@ -368,13 +336,27 @@ function reserve(loc) {
                            url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + $('input#timefrom').val().split(':')[0]
                            }).success (function(responseText) {
                            $('#myChart').remove()
-                           $('#div_chart').append('<canvas id="myChart" width="400" height="400"></canvas>')
+                           $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
                            eval(responseText)
                            draw_chart()
                            })
                        })
                 },
-                "reset": function () { this.clear() },
+                "cancel": function () { 
+                    $.ajax({
+                          url:document.location['origin']+'/clear?username=this'
+                    }).success (function(responseText) {
+                           alert(responseText)
+                           $.ajax({
+                           url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + $('input#timefrom').val().split(':')[0]
+                           }).success (function(responseText) {
+                           $('#myChart').remove()
+                           $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
+                           eval(responseText)
+                           draw_chart()
+                           })
+                       })
+                },
             },
             onChange: function(event){
                 if (event.target ==  'timefrom'){
@@ -385,7 +367,7 @@ function reserve(loc) {
                            url: document.location['origin'] + "/get_data_for_chart?location=" + $('input#location').val() + '&hour=' + timefrom_hour 
                        }).success (function(responseText) {
                            $('#myChart').remove()
-                           $('#div_chart').append('<canvas id="myChart" width="400" height="400"></canvas>')
+                           $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
                            eval(responseText)
                            draw_chart()
                            })
@@ -400,7 +382,7 @@ function reserve(loc) {
                            url: document.location['origin'] + "/get_data_for_chart?location=" + loca + '&hour=' + timefrom_hour 
                        }).success (function(responseText) {
                            $('#myChart').remove()
-                           $('#div_chart').append('<canvas id="myChart" width="400" height="400"></canvas>')
+                           $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
                            eval(responseText)
                            draw_chart()
                            })
@@ -433,7 +415,7 @@ function reserve(loc) {
                      url:document.location['origin'] + "/get_data_for_chart?location=" + loc + '&hour='+ new Date().getHours()
                 }).success (function(responseText) {
                       $('#myChart').remove()
-                      $('#div_chart').append('<canvas id="myChart" width="400" height="400"></canvas>')
+                      $('#div_chart').append('<canvas id="myChart" width="375" height="300" style="padding-left:30px" ></canvas>')
                       eval(responseText)
                       draw_chart()
                 })

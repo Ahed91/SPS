@@ -195,3 +195,10 @@ body {
     top: 600px;
     z-index: 1;
 }
+
+#logout {
+    position: absolute;
+    left: 1173px;
+    top: 50px;
+    z-index: 1;
+}

@@ -192,6 +192,11 @@ class Root:
         return "Done"
 
     @cherrypy.expose
+    def logout(self):
+        cherrypy.session['username'] = None
+        raise cherrypy.HTTPRedirect("/sign") 
+
+    @cherrypy.expose
     def main(self):
         # check if not logged in then redirect to signup
         if cherrypy.session.get('username') == None:
@@ -268,25 +273,18 @@ class Root:
 
     @cherrypy.expose
     def contact(self,*pargs):
-        first_name = pargs[0]
-        last_name = pargs[1]
-        email = pargs[2]
-        message = pargs[3]
-        try:
-            # Connect to database
-            db = sqlite3.connect(data_dir+'/data.db')
-            cursor = db.cursor()
-            cursor.execute('''INSERT INTO contact(firstname, lastname, email, body)
-                                         VALUES(?,?,?,?)''', (first_name, last_name, email, message))
-            db.commit()
-        except Exception as e:
-            db.rollback()
-            raise e
-        finally:
-            db.close()
-            id = cursor.lastrowid
-            print('contact inserted', id)
-            return 'Thanks for your interest'
+        message = pargs[0]
+        username = cherrypy.session['username']
+        db = sqlite3.connect(data_dir+'/data.db')
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM users where username= ?',(username,) )
+        row = cursor.fetchone()
+        print row
+        cursor.execute('''INSERT INTO contact(firstname, lastname, email, body)
+                                     VALUES(?,?,?,?)''', (username, row[4], row[2], message))
+        db.commit()
+        db.close()
+        return 'Thanks for your interest'
 
     @cherrypy.expose
     def reserve(self, *pargs, **kwargs):
