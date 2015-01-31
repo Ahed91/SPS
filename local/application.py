@@ -556,7 +556,7 @@ class Root:
         # check for sync
         if round(time.time() - Root.time_snap2) > 60:
             Root.time_snap2 = time.time()
-            sync()
+            #sync()
         if len(pargs) == 0 :
             return 'No location is inserted'
         current_date=time.strftime('%d.%m.%Y')
@@ -923,7 +923,7 @@ class Root:
 
 def startup_init():
     createdb()
-    sync()
+    #sync()
 
 def createdb():
     # Get a cursor 
