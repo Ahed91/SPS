@@ -9,6 +9,7 @@ import sqlite3
 import time
 import json
 import re
+from threading import Thread
 from grequests import AsyncRequest
 from util import color_variant
 
@@ -556,7 +557,7 @@ class Root:
         # check for sync
         if round(time.time() - Root.time_snap2) > 60:
             Root.time_snap2 = time.time()
-            #sync()
+            sync()
         if len(pargs) == 0 :
             return 'No location is inserted'
         current_date=time.strftime('%d.%m.%Y')
@@ -923,7 +924,7 @@ class Root:
 
 def startup_init():
     createdb()
-    #sync()
+    sync()
 
 def createdb():
     # Get a cursor 
@@ -935,7 +936,7 @@ def createdb():
                    ''')
     db.commit()
     cursor.execute('''INSERT INTO users(username, email, password,mobile )
-                                 VALUES(?,?,?,?)''', ('admin', 'admin', '123456','0000000'))
+                                 VALUES(?,?,?,?)''', ('admin', 'admin@admin.com', '123456','0000000'))
     db.commit()
     cursor.execute('''
                CREATE TABLE IF NOT EXISTS reserve(id INTEGER PRIMARY KEY, username TEXT,location TEXT,
@@ -951,8 +952,7 @@ def createdb():
     db.close()
     print 'Database Created'
 
-
-def sync():
+def sync2():
     # Connect to database
     db = sqlite3.connect(current_dir+'/data.db')
     cursor = db.cursor()
@@ -986,6 +986,12 @@ def sync():
                                      VALUES(?,?,?,?,?,?)''', (a[0], a[1], a[2], a[3], a[4], a[5]))
         db.commit()
     db.close()
+
+
+
+def sync():
+    sync_thread = threading.Thread(target=sync2)
+    sync_thread.start()
     return 'yes'
 
 

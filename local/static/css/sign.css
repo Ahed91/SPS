@@ -87,6 +87,17 @@ header[role=banner]::after {
   }
 }
 
+
+
+footer[role=banner] {
+  position: relative;
+  height: 50px;
+  background: #343642;
+}
+
+
+
+
 .main-nav {
   float: right;
   margin-right: 5%;
