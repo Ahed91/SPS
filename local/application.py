@@ -1111,7 +1111,7 @@ conf = {'/':
             'static/img/cd-icon-close.svg'},
 
          'global':{
-                'server.socket_port':80,
+                'server.socket_host':'0.0.0.0',
                 'tools.sessions.on': True
                 }}
 
